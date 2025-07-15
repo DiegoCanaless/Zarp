@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -67,3 +68,7 @@ export default tseslint.config([
   },
 ])
 ```
+=======
+# Zarp!
+Zarp es una app web que conecta propietarios y huéspedes para alquileres temporales de departamentos. Los anfitriones publican sus propiedades y los usuarios pueden alquilarlas por unos días, un fin de semana o una semana completa, de forma simple y rápida.
+>>>>>>> 923e3a789daaa1ebf3df2735ee50d6fe6ae0ba2e
