@@ -1,21 +1,21 @@
-import React from 'react';
+
 
 interface ButtonPrimaryOptions {
     text?: string;
-    maxWidth?: string;        // Ej: 'max-w-xs'
-    height?: string;          // Ej: 'h-10'
-    color?: string;           // Ej: 'text-black'
-    bgColor?: string;         // Ej: 'bg-[#E2DBBE]' o color hex
-    fontSize?: string;        // Ej: 'text-base'
+    maxWidth?: string;
+    height?: string;  
+    color?: string;  
+    bgColor?: string;  
+    fontSize?: string;  
     onClick?: () => void;
     className?: string;
-    borderRadius?: string;    // Ej: 'rounded-lg'
-    fontWeight?: string;      // Ej: 'font-semibold'
+    borderRadius?: string;   
+    fontWeight?: string;      
 }
 
 export const ButtonPrimary: React.FC<ButtonPrimaryOptions> = ({
     text= 'Iniciar Sesion',
-    maxWidth= 'max-w-[120px]',    // Cambia según lo que prefieras
+    maxWidth= 'max-w-[120px]',
     height= 'h-8',
     fontSize= 'text-xs',
     color = 'text-black',
@@ -25,7 +25,6 @@ export const ButtonPrimary: React.FC<ButtonPrimaryOptions> = ({
     onClick = () => {},
     className = '',
 }) => {
-    // Junta todas las clases de tailwind
     const classes = [
         maxWidth,
         height,
@@ -35,8 +34,8 @@ export const ButtonPrimary: React.FC<ButtonPrimaryOptions> = ({
         borderRadius,
         fontWeight,
         className,
-        'transition-transform',  // Para hover:scale-105
-        'active:scale-95'        // Pequeña animación al click
+        'transition-transform',
+        'active:scale-95'  
     ].join(' ');
 
     return (

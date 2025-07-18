@@ -3,8 +3,18 @@ import { LandingHeader } from '../components/layout/headers/LandingHeader'
 import VideoMobile  from '../assets/Videos/videoFondoCelular.mp4'
 import VideoDesktop from '../assets/Videos/videoFondoPC.mp4'
 import { ButtonPrimary } from '../components/ui/buttons/ButtonPrimary'
+import {CardPropiedadDestacada} from '../components/landing/CardPropiedadDestacada'
+import  imagen1  from '../assets/Imagenes/PropiedadDestacada1.jpg'
+import  imagen2  from '../assets/Imagenes/PropiedadDestacada2.jpg'
+import  imagen3  from '../assets/Imagenes/PropiedadDestacada3.jpg'
+
 
 const Landing = () => {
+
+
+
+
+
   return (
     <>
     {/* HERO */}
@@ -27,6 +37,15 @@ const Landing = () => {
       <LandingHeader />
 
       {/* PROPIEDADES DESTACADAS */}
+      <main>
+        <section className='flex flex-col items-center justify-center bg-secondary'>
+          <h2 className='font-Tertiary text-2xl py-5 text-center text-white'>Propiedades Destacadas</h2>
+          <CardPropiedadDestacada titulo='NR Apart San Diego 403 - Casa Presidencial' imagen={imagen1} habitaciones='3 huéspedes 1 dormitorio 2 camas 1 baño' precio='$90.000' noches='2 noches' />
+          <CardPropiedadDestacada titulo='NR Apart San Diego 403 - Casa Presidencial' imagen={imagen2} habitaciones='3 huéspedes 1 dormitorio 2 camas 1 baño' precio='$90.000' noches='2 noches' />
+          <CardPropiedadDestacada titulo='NR Apart San Diego 403 - Casa Presidencial' imagen={imagen3} habitaciones='3 huéspedes 1 dormitorio 2 camas 1 baño' precio='$90.000' noches='2 noches' />
+
+        </section>
+      </main>
     </>
   )
 }
