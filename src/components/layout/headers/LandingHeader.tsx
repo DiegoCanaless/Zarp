@@ -5,12 +5,17 @@ import { ButtonPrimary } from '../../ui/buttons/ButtonPrimary'
 import { useState } from 'react'
 import { LoginModal } from '../../auth/LoginModal'
 
+
 export const LandingHeader = () => {
 
   const [modalAbierto, setModalAbierto] = useState<boolean>(false);
 
   function abrirModal() {
-    setModalAbierto(!modalAbierto)
+    setModalAbierto(true)
+  }
+
+  function cerrarModal() {
+    setModalAbierto(false);
   }
 
   return (
@@ -19,7 +24,7 @@ export const LandingHeader = () => {
         <ButtonPrimary className='px-2 duration-300 hover:cursor-pointer hover:scale-105 md:w-35' onClick={abrirModal} />
 
         {modalAbierto && (
-          <LoginModal/>
+          <LoginModal onClose={cerrarModal}/>
         )}
     </header>
   )
