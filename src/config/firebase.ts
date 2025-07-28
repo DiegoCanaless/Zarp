@@ -5,14 +5,15 @@ import { getAuth } from "firebase/auth";
 
 
 
+
 const firebaseConfig = {
-  apiKey: "AIzaSyBKouYtC2Qn79oO_imFGOGI6xyCx_ywc5s",
-  authDomain: "zarp-a78e3.firebaseapp.com",
-  projectId: "zarp-a78e3",
-  storageBucket: "zarp-a78e3.firebasestorage.app",
-  messagingSenderId: "1071691235796",
-  appId: "1:1071691235796:web:144a0b26662dde23f45641",
-  measurementId: "G-112SF3PFCF"
+  apiKey: import.meta.env.VITE_APIKEY,
+  authDomain: import.meta.env.VITE_AUTHDOMAIN,
+  projectId: import.meta.env.VITE_PROJECTID,
+  storageBucket: import.meta.env.VITE_STORAGEBUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGINGSENDERID,
+  appId: import.meta.env.VITE_APPID,
+  measurementId: import.meta.env.VITE_MEASUREMENTID,
 };
 
 // Initialize Firebase
