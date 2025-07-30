@@ -17,14 +17,16 @@ import * as yup from "yup";
 import { useDispatch } from 'react-redux';
 import { setUser } from '../../reducer/user/userSlice';
 
+interface LoginModalProps {
+  onClose: () => void;
+}
 
-
-export const LoginModal = ({ onClose }) => {
+export const LoginModal = ({ onClose }: LoginModalProps) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // Cerrar Modal
-  const handleBackdropClick = (e) => {
+  const handleBackdropClick = (e: any) => {
     if (e.target === e.currentTarget) onClose();
   };
 
@@ -72,7 +74,7 @@ export const LoginModal = ({ onClose }) => {
                 const email = result.user.email;
                 const token = await result.user.getIdToken();
                 dispatch(setUser({
-                  fullname: nombre || email.split("@")[0],
+                  fullname: nombre || email?.split("@")[0] || "Usuario",
                   email,
                   token,
                 }));

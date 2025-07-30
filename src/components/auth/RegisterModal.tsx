@@ -15,12 +15,16 @@ import { setUser } from '../../reducer/user/userSlice';
 import { auth } from "../../config/firebase";
 import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
+interface RegisterModalProps {
+  onClose: () => void;
+}
 
-export const RegisterModal = ({ onClose }) => {
+
+export const RegisterModal = ({ onClose } : RegisterModalProps) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleBackdropClick = (e) => {
+  const handleBackdropClick = (e : any) => {
     if (e.target === e.currentTarget) onClose();
   };
 
@@ -47,7 +51,7 @@ export const RegisterModal = ({ onClose }) => {
     name: yup.string().required("El nombre es requerido").min(3, "El nombre debe tener al menos 3 caracteres"),
     email: yup.string().required("El correo es requerido").email("El correo no tiene un formato válido"),
     password: yup.string().required("La contraseña es requerida").min(8, "La contraseña debe tener al menos 8 caracteres"),
-    repeatpassword: yup.string().required("Debes repetir la contraseña").oneOf([yup.ref('password'), null], 'Las contraseñas deben coincidir')
+    repeatpassword: yup.string().required("Debes repetir la contraseña").oneOf([yup.ref('password')], 'Las contraseñas deben coincidir')
   });
 
   return (
@@ -81,7 +85,7 @@ export const RegisterModal = ({ onClose }) => {
                   token,
                 }));
                 navigate("/Inicio");
-              } catch (error) {
+              } catch (error : any) {
                 if (error.code === "auth/email-already-in-use") {
                   setFieldError("email", "El correo ya está registrado");
                 } else {
