@@ -1,34 +1,32 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { act } from 'react';
 
-
-const initialState = {
-    fullname: "",
-    email: "",
-    token: "",
-    isAuthenticated: false,
-
-}
+const userFromStorage = JSON.parse(localStorage.getItem('user')) || {
+  fullname: "",
+  email: "",
+  token: "",
+  isAuthenticated: false,
+};
 
 export const userSlice = createSlice({
   name: 'user',
-  initialState: initialState,
+  initialState: userFromStorage,
   reducers: {
-    setUser : (state, action) => {
-        state.fullname = action.payload.fullname;
-        state.email = action.payload.email;
-        state.token = action.payload.token;
+    setUser: (state, action) => {
+      state.fullname = action.payload.fullname;
+      state.email = action.payload.email;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      localStorage.setItem('user', JSON.stringify(state));
     },
-
     logout: (state) => {
-        state.fullname = "";
-        state.email = "";
-        state.token = "";
+      state.fullname = "";
+      state.email = "";
+      state.token = "";
+      state.isAuthenticated = false;
+      localStorage.removeItem('user');
     }
   }
 })
 
-// Action creators are generated for each case reducer function
 export const { setUser, logout } = userSlice.actions
-
 export default userSlice.reducer
