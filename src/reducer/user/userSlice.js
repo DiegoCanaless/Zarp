@@ -4,7 +4,8 @@ const userFromStorage = JSON.parse(localStorage.getItem('user')) || {
   fullname: "",
   email: "",
   token: "",
-  isAuthenticated: false,
+  AuthenticatedEmail: false,
+  AuthenticatedDocs: false,
 };
 
 export const userSlice = createSlice({
@@ -15,14 +16,16 @@ export const userSlice = createSlice({
       state.fullname = action.payload.fullname;
       state.email = action.payload.email;
       state.token = action.payload.token;
-      state.isAuthenticated = true;
+      state.AuthenticatedEmail = action.payload.AuthenticatedEmail ?? state.AuthenticatedEmail;
+      state.AuthenticatedDocs = false;
       localStorage.setItem('user', JSON.stringify(state));
     },
     logout: (state) => {
       state.fullname = "";
       state.email = "";
       state.token = "";
-      state.isAuthenticated = false;
+      state.AuthenticatedEmail = false;
+      state.AuthenticatedDocs = false;
       localStorage.removeItem('user');
     }
   }
