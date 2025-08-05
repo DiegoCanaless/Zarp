@@ -1,5 +1,5 @@
-
-import fotoPerfil from "../assets/Imagenes/FotoPeruano.jpg"
+import fotoPerfil from "../assets/Imagenes/fotoPerfilDefault.jpg"
+import toast from 'react-hot-toast';
 
 // Componentes
 import { UsuarioHeader } from "../components/layout/headers/UsuarioHeader"
@@ -13,15 +13,20 @@ import { AiOutlineClose } from "react-icons/ai";
 
 // Edicion
 import { useDispatch, useSelector } from "react-redux"
-import { getAuth, reload, sendEmailVerification, updateProfile, updatePassword } from "firebase/auth";
+import { getAuth, sendEmailVerification, updateProfile, updatePassword, reload } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { setUser } from "../reducer/user/userSlice";
-
 
 const MiPerfil = () => {
     const auth = getAuth();
     const user = auth.currentUser;
+
+    const isPasswordUser = user?.providerData.some(
+        (provider) => provider.providerId === "password"
+    );
+
     const usuario = useSelector((state: any) => state.user)
+    const imagenPerfil = usuario.photoURL || user?.photoURL || fotoPerfil;
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -29,7 +34,6 @@ const MiPerfil = () => {
             if (user) {
                 await reload(user);
                 if (user.emailVerified && !usuario.AuthenticatedEmail) {
-                    // Actualizar el estado en Redux si el email ya está verificado
                     dispatch(setUser({
                         ...usuario,
                         AuthenticatedEmail: true,
@@ -53,12 +57,21 @@ const MiPerfil = () => {
             }
 
             // Cambiar la contraseña
-            if (password || repeatPassword) {
+            if (isPasswordUser && (password || repeatPassword)) {
                 if (password !== repeatPassword) {
-                    return alert("Las contraseñas no coinciden");
+                    return (
+                        toast.error('Las contraseñas no coinciden', {
+                            duration: 3000
+                        })
+                    )
+                    return
                 }
+
                 if (password.length < 6) {
-                    return alert("La contraseña debe tener al menos 6 caracteres");
+                    toast.error('La contraseña debe tener al menos 6 caracteres', {
+                        duration: 3000
+                    })
+                    return
                 }
 
                 await updatePassword(user, repeatPassword);
@@ -73,16 +86,19 @@ const MiPerfil = () => {
                 AuthenticatedDocs: usuario.AuthenticatedDocs,
             }));
 
-            console.log("Perfil actualizado con éxito");
+            toast.success('Perfil actualizado con exito', {
+                duration: 3000
+            })
+
             setModoEdicion(false);
             setPassword('');
             setRepeatPassword('');
         } catch (error: any) {
-            console.log("Error al actualizar el perfil:", error.message);
-            alert("Error: " + error.message);
+            toast.error('Error al actualizar el perfil:' + error.message, {
+                duration: 3000
+            })
         }
     }
-
 
     const [modoEdicion, setModoEdicion] = useState<boolean>(false);
     const [nombre, setNombre] = useState<string>(usuario.fullname)
@@ -98,7 +114,6 @@ const MiPerfil = () => {
         setModoEdicion(!modoEdicion);
     }
 
-
     const enviarCodigo = async () => {
         try {
             await sendEmailVerification(user);
@@ -108,15 +123,31 @@ const MiPerfil = () => {
         }
     }
 
+    const cambiarFotoPerfil = () => {
+
+    }
 
     return (
-        <>
+        // Contenedor principal que ocupa toda la altura de la pantalla
+        <div className="min-h-screen flex flex-col bg-secondary">
             <UsuarioHeader />
-            <div className="w-full flex flex-col items-center pb-10 bg-secondary pt-20">
-                <h1 className="text-4xl text-white">Mi Perfil</h1>
-                <img src={fotoPerfil} className="w-35 h-35 mt-2 rounded-full" alt="Foto de Perfil" />
 
-                <div className="flex flex-col items-start mt-6 w-60 gap-5 text-white mb-7">
+            {/* Contenido principal que se expande para ocupar el espacio disponible */}
+            <div className="flex-grow flex flex-col items-center pt-20 md:flex-row md:h-auto lg:min-h-auto md:justify-evenly lg:px-20">
+                <div className="flex flex-col md:mb-20">
+                    <h1 className="text-4xl text-white md:mb-5">Mi Perfil</h1>
+                    <div className="relative group w-35 h-35 mt-2 md:w-50 md:h-50 cursor-pointer" onClick={cambiarFotoPerfil} >
+                        <img src={imagenPerfil} className="w-full h-full rounded-full object-cover border-2 border-white group-hover:brightness-75 transition-all duration-150" alt="Foto de Perfil" />
+                        <input type="file"accept="image/*"className="hidden"/>
+                        <div className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-full transition-all duration-150">
+                            <p className="text-xs">Cambiar foto</p>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div className="flex flex-col items-start mt-6 gap-5 text-white mb-7 w-full max-w-3/4 md:w-90">
                     {!modoEdicion ? (
                         <>
                             <div className="border-b-1 border-b-black w-full">
@@ -130,57 +161,72 @@ const MiPerfil = () => {
                         </>
                     ) : (
                         <>
-                            <div className="  w-full">
-                                <p className="text-xs font-light">Nombre Completo:</p>
-                                <input type="text" value={nombre}
+                            <div className="w-full">
+                                <label htmlFor="nombre" className="text-xs font-light">Nombre Completo:</label>
+                                <input id="nombre" type="text" value={nombre}
                                     onChange={e => setNombre(e.target.value)} className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0" />
                             </div>
                             <div className="border-b-1 border-b-black w-full">
                                 <p className="text-xs font-light">Correo Electronico:</p>
                                 <p className="text-md">{usuario.email}</p>
                             </div>
-                            <div className="  w-full">
-                                <p className="text-xs font-light">Nueva Contraseña:</p>
-                                <input type="password" value={password}
-                                    onChange={e => setPassword(e.target.value)} placeholder="*******" className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0" />
-                            </div>
-                            <div className="  w-full">
-                                <p className="text-xs font-light">Nombre Completo:</p>
-                                <input type="password" value={repeatPassword}
-                                    onChange={e => setRepeatPassword(e.target.value)} placeholder="*******" className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0" />
-                            </div>
+                            {isPasswordUser && (
+                                <>
+                                    <div className="w-full">
+                                        <label htmlFor="newPassword" className="text-xs font-light">Nueva Contraseña</label>
+                                        <input id="newPassword" type="password" value={password}
+                                            onChange={e => setPassword(e.target.value)} placeholder="*******"
+                                            className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0" />
+                                    </div>
+                                    <div className="w-full">
+                                        <label htmlFor="repeatNewPassword" className="text-xs font-light">Repetir Contraseña:</label>
+                                        <input id="repeatNewPassword" type="password" value={repeatPassword}
+                                            onChange={e => setRepeatPassword(e.target.value)} placeholder="*******"
+                                            className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0" />
+                                    </div>
+                                </>
+                            )}
+
+                            {!isPasswordUser && (
+                                <p className="text-sm text-yellow-300 mt-2">
+                                    Este usuario ha iniciado sesión con Google y no puede cambiar su contraseña.
+                                </p>
+                            )}
 
                         </>
-
-                    )}
-
-
-
-                    {!usuario.AuthenticatedEmail && (
-                        <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 cursor-pointer" onClick={abrirModalConfirmacion}>
-                            <MdPriorityHigh fontSize={30} color="red" />
-                            <p className="text-xs">Falta Verificacion del correo</p>
-                        </div>
-                    )}
-
-                    {!usuario.AuthenticatedDocs && (
-                        <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 cursor-pointer">
-                            <MdPriorityHigh fontSize={30} color="red" />
-                            <p className="text-xs">Falta Verificacion de documentos</p>
-                        </div>
                     )}
                 </div>
+            </div>
+
+            {/* Sección de alertas y botones */}
+            <div className="flex flex-col items-center bg-secondary pb-10 gap-5 text-white">
+                {!usuario.AuthenticatedEmail && (
+                    <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 cursor-pointer w-full max-w-3/4" onClick={abrirModalConfirmacion}>
+                        <MdPriorityHigh fontSize={30} color="red" />
+                        <p className="text-xs">Falta Verificacion del correo</p>
+                    </div>
+                )}
+
+                {!usuario.AuthenticatedDocs && (
+                    <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 cursor-pointer w-full max-w-3/4">
+                        <MdPriorityHigh fontSize={30} color="red" />
+                        <p className="text-xs">Falta Verificacion de documentos</p>
+                    </div>
+                )}
 
                 {!modoEdicion ? (
                     <ButtonSecondary onClick={editar} text="Editar Datos" className="m-auto w-40" bgColor="bg-white" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" />
                 ) : (
-                    <ButtonSecondary onClick={actualizarPerfil} text="Guardar Cambios" className="m-auto w-40" color="text-white" bgColor="bg-primary" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" />
+                    <div className="flex justify-center gap-10">
+                        <ButtonSecondary onClick={actualizarPerfil} text="Guardar Cambios" className="m-auto w-40" color="text-white" bgColor="bg-primary" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" />
+                        <ButtonSecondary onClick={editar} text="Cancelar" className="m-auto w-40" color="text-white" bgColor="bg-red-900" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" />
 
+
+                    </div>
                 )}
-
             </div>
-            <Footer />
 
+            <Footer />
 
             {modalConfirmacion && (
                 <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
@@ -192,10 +238,8 @@ const MiPerfil = () => {
                     </div>
                 </div>
             )}
-
-        </>
-
+        </div>
     )
 }
 
-export default MiPerfil
+export default MiPerfil;

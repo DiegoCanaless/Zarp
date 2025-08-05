@@ -1,6 +1,5 @@
 export interface UsuarioDTO {
-  uId: string;
+  uid: string;
   nombreCompleto: string;
   correoElectronico: string;
-  contrasena: string;
 }

@@ -1,6 +1,7 @@
 import { FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
+import toast from 'react-hot-toast';
 
 // Formulario
 import { ErrorMessage, Field, Form, Formik } from "formik";
@@ -9,6 +10,7 @@ import * as yup from "yup";
 // Redux
 import { useDispatch } from 'react-redux';
 import { setUser } from '../../reducer/user/userSlice';
+
 
 // Google
 import { auth } from "../../config/firebase";
@@ -22,12 +24,14 @@ import {
 // Types
 import type { ClienteDTO } from "../../types/entities/cliente/ClienteDTO";
 import type { UsuarioDTO } from "../../types/entities/usuario/UsuarioDTO"
+import { useState } from "react";
 
 interface RegisterModalProps {
   onClose: () => void;
 }
 
 export const RegisterModal = ({ onClose }: RegisterModalProps) => {
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -38,7 +42,7 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
   // Función para enviar cliente al backend
   const enviarClienteAlBackend = async (cliente: ClienteDTO) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/clientes/save`, {
+      const response = await fetch("http://localhost:8080/api/clientes/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,10 +68,9 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
       const token = await result.user.getIdToken();
 
       const usuario: UsuarioDTO = {
-        uId: uid,
+        uid: uid,
         nombreCompleto: nombre,
         correoElectronico: email,
-        contrasena: "",
       }
 
       const cliente: ClienteDTO = {
@@ -82,7 +85,13 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
         token,
       }));
 
-      navigate("/Inicio");
+      toast.success('Usuario registrado con exito', {
+        position: "bottom-center"
+      })
+
+      setTimeout(() => {
+        navigate("/Inicio");
+      }, 2000);
     } catch (error) {
       console.error("Error Logeandose con Google", error);
     }
@@ -127,10 +136,9 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                 const emailVerified = result.user.emailVerified;
 
                 const usuario: UsuarioDTO = {
-                    uId: uid,
-                    nombreCompleto: nombre,
-                    correoElectronico: email,
-                    contrasena: values.password,
+                  uid: uid,
+                  nombreCompleto: nombre,
+                  correoElectronico: email
                 }
 
                 const cliente: ClienteDTO = {
@@ -146,7 +154,14 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                   AuthenticatedEmail: emailVerified,
                 }));
 
-                navigate("/Inicio");
+                toast.success('Usuario registrado con exito', {
+                  position: "bottom-center"
+                })
+
+                setTimeout(() => {
+                  navigate("/Inicio");
+                }, 2000);
+
               } catch (error: any) {
                 if (error.code === "auth/email-already-in-use") {
                   setFieldError("email", "El correo ya está registrado");

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { RegisterModal } from "./RegisterModal";
+import toast from 'react-hot-toast';
 
 
 // Google
@@ -16,6 +17,8 @@ import * as yup from "yup";
 // Redux
 import { useDispatch } from 'react-redux';
 import { setUser } from '../../reducer/user/userSlice';
+import type { ClienteDTO } from "../../types/entities/cliente/ClienteDTO";
+import type { UsuarioDTO } from "../../types/entities/usuario/UsuarioDTO";
 
 interface LoginModalProps {
   onClose: () => void;
@@ -30,24 +33,73 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
     if (e.target === e.currentTarget) onClose();
   };
 
+  // Verificacion de cliente existente
+  const registrarClienteSiNoExiste = async (cliente: ClienteDTO) => {
+    try {
+      const checkResponse = await fetch(`http://localhost:8080/api/clientes/${cliente.usuario.uid}`);
+
+      if (checkResponse.status === 200) {
+        console.log("Cliente ya registrado");
+      }
+
+      if (checkResponse.status === 404) {
+        const saveResponse = await fetch("http://localhost:8080/api/clientes/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(cliente),
+        });
+
+        if (!saveResponse.ok) {
+          throw new Error("Error al registrar nuevo cliente");
+        }
+
+        toast.success('Usuario registrado con exito', {
+          position: "bottom-center"
+        })
+
+      } else {
+        throw new Error("Error al verificar existencia del cliente");
+      }
+    } catch (error) {
+      console.error("Error al registrar/verificar cliente:", error);
+    }
+  };
+
   // Google login
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const nombre = result.user.displayName;
-      const email = result.user.email;
+
+      const uid = result.user.uid;
+      const nombre = result.user.displayName || "Sin nombre";
+      const email = result.user.email!;
       const token = await result.user.getIdToken();
+
+      const usuario: UsuarioDTO = {
+        uid,
+        nombreCompleto: nombre,
+        correoElectronico: email,
+      };
+
+      const cliente: ClienteDTO = { usuario };
+
+      await registrarClienteSiNoExiste(cliente);
+
       dispatch(setUser({
         fullname: nombre,
         email,
         token,
       }));
+
       navigate("/Inicio");
     } catch (error) {
       console.error("Error signing in with Google", error);
     }
   };
+
 
   const [AbrirRegistro, setAbrirRegistro] = useState(false);
 
@@ -65,7 +117,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
             <h2 className="font-semibold text-xl">Iniciar Sesion</h2>
             <p className="text-xs mt-1">Vamos inicia sesion!</p>
           </div>
-          <Formik 
+          <Formik
             initialValues={{ email: "", password: "" }}
             onSubmit={async (values, { setSubmitting, setFieldError }) => {
               try {
@@ -90,7 +142,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
               <Form className="flex flex-col w-full gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="email">Correo</label>
-                  <Field type="email" name="email" id="email" placeholder="ejemplo@gmail.com" 
+                  <Field type="email" name="email" id="email" placeholder="ejemplo@gmail.com"
                     className="border-b-tertiary border-b-2 outline-0 bg-transparent" />
                   <ErrorMessage name="email">
                     {msg => <p className="text-red-500 text-xs mt-1">{msg}</p>}
@@ -98,7 +150,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
                 </div>
                 <div className="flex flex-col gap-2">
                   <label htmlFor="password">Contraseña</label>
-                  <Field type="password" name="password" id="password" placeholder="Contraseña123" 
+                  <Field type="password" name="password" id="password" placeholder="Contraseña123"
                     className="border-b-tertiary border-b-2 outline-0 bg-transparent" />
                   <ErrorMessage name="password">
                     {msg => <p className="text-red-500 text-xs mt-1">{msg}</p>}
