@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { getAuth, sendEmailVerification, updateProfile, updatePassword, reload } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { setUser } from "../reducer/user/userSlice";
+import { Link } from "react-router-dom";
 
 const MiPerfil = () => {
     const auth = getAuth();
@@ -138,10 +139,13 @@ const MiPerfil = () => {
                     <h1 className="text-4xl text-white md:mb-5">Mi Perfil</h1>
                     <div className="relative group w-35 h-35 mt-2 md:w-50 md:h-50 cursor-pointer" onClick={cambiarFotoPerfil} >
                         <img src={imagenPerfil} className="w-full h-full rounded-full object-cover border-2 border-white group-hover:brightness-75 transition-all duration-150" alt="Foto de Perfil" />
-                        <input type="file"accept="image/*"className="hidden"/>
-                        <div className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-full transition-all duration-150">
-                            <p className="text-xs">Cambiar foto</p>
-                        </div>
+                        <input type="file" accept="image/*" className="hidden" />
+                        {isPasswordUser && (
+                            <div className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-full transition-all duration-150">
+                                <p className="text-xs">Cambiar foto</p>
+                            </div>
+                        )}
+
                     </div>
 
 
@@ -208,10 +212,13 @@ const MiPerfil = () => {
                 )}
 
                 {!usuario.AuthenticatedDocs && (
-                    <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 cursor-pointer w-full max-w-3/4">
-                        <MdPriorityHigh fontSize={30} color="red" />
-                        <p className="text-xs">Falta Verificacion de documentos</p>
-                    </div>
+                    <Link to={'/userVerificacion'} className="w-full max-w-3/4 m-auto">
+                        <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 cursor-pointer w-full ">
+                            <MdPriorityHigh fontSize={30} color="red" />
+                            <p className="text-xs">Falta Verificacion de documentos</p>
+                        </div>
+                    </Link>
+
                 )}
 
                 {!modoEdicion ? (
