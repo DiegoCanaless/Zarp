@@ -1,5 +1,8 @@
-import type { UsuarioDTO } from "../usuario/UsuarioDTO";
-
 export interface ClienteDTO {
-  usuario: UsuarioDTO;
+  uid: string,
+  nombreCompleto: string,
+  correoElectronico: string,
+  fotoPerfil: {
+    urlImagen: string
+  }
 }

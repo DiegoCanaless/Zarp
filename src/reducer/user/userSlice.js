@@ -1,32 +1,43 @@
+// reducer/user/userSlice.js
 import { createSlice } from '@reduxjs/toolkit'
 
 const userFromStorage = JSON.parse(localStorage.getItem('user')) || {
-  fullname: "",
-  email: "",
-  token: "",
+  id: null,
+  uid: '',
+  fullname: '',
+  email: '',
+  token: '',
+  photoURL: '',
   AuthenticatedEmail: false,
   AuthenticatedDocs: false,
-};
+}
 
 export const userSlice = createSlice({
   name: 'user',
   initialState: userFromStorage,
   reducers: {
     setUser: (state, action) => {
-      state.fullname = action.payload.fullname;
-      state.email = action.payload.email;
-      state.token = action.payload.token;
-      state.AuthenticatedEmail = action.payload.AuthenticatedEmail ?? state.AuthenticatedEmail;
-      state.AuthenticatedDocs = false;
-      localStorage.setItem('user', JSON.stringify(state));
+      const p = action.payload
+      if(p.id !== undefined) state.id = p.id
+      if (p.uid !== undefined) state.uid = p.uid
+      if (p.fullname !== undefined) state.fullname = p.fullname
+      if (p.email !== undefined) state.email = p.email
+      if (p.token !== undefined) state.token = p.token
+      if (p.photoURL !== undefined) state.photoURL = p.photoURL
+      state.AuthenticatedEmail = p.AuthenticatedEmail ?? state.AuthenticatedEmail
+      state.AuthenticatedDocs = p.AuthenticatedDocs ?? state.AuthenticatedDocs
+      localStorage.setItem('user', JSON.stringify(state))
     },
     logout: (state) => {
-      state.fullname = "";
-      state.email = "";
-      state.token = "";
-      state.AuthenticatedEmail = false;
-      state.AuthenticatedDocs = false;
-      localStorage.removeItem('user');
+      state.id = ""
+      state.uid = ''
+      state.fullname = ''
+      state.email = ''
+      state.token = ''
+      state.photoURL = ''
+      state.AuthenticatedEmail = false
+      state.AuthenticatedDocs = false
+      localStorage.removeItem('user')
     }
   }
 })

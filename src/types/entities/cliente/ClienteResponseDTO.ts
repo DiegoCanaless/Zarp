@@ -1,10 +1,13 @@
-import type { UsuarioResponseDTO } from "../usuario/UsuarioResponseDTO";
+import type { ImagenResponseDTO } from "../imagen/ImagenResponseDTO";
 
 export interface ClienteResponseDTO {
   id: number;
   activo: boolean;
-  usuario: UsuarioResponseDTO;
-  telefono: string;
+  uid: string;
+  nombreCompleto: string;
+  correoElectronico: string;
+  rol: string | null;
   correoVerificado: boolean;
   documentoVerificado: boolean;
+  fotoPerfil: ImagenResponseDTO | null;
 }

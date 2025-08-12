@@ -1,252 +1,497 @@
-import fotoPerfil from "../assets/Imagenes/fotoPerfilDefault.jpg"
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 // Componentes
-import { UsuarioHeader } from "../components/layout/headers/UsuarioHeader"
-import { Footer } from "../components/layout/Footer"
-import { ButtonSecondary } from "../components/ui/buttons/ButtonSecondary"
-import { ButtonTertiary } from "../components/ui/buttons/ButtonTertiary"
+import { UsuarioHeader } from "../components/layout/headers/UsuarioHeader";
+import { Footer } from "../components/layout/Footer";
+import { ButtonSecondary } from "../components/ui/buttons/ButtonSecondary";
+import { ButtonTertiary } from "../components/ui/buttons/ButtonTertiary";
 
 // Iconos
 import { MdPriorityHigh } from "react-icons/md";
 import { AiOutlineClose } from "react-icons/ai";
 
-// Edicion
-import { useDispatch, useSelector } from "react-redux"
+// React/Redux/Firebase
+import { useDispatch, useSelector } from "react-redux";
 import { getAuth, sendEmailVerification, updateProfile, updatePassword, reload } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { setUser } from "../reducer/user/userSlice";
 import { Link } from "react-router-dom";
 
+// types
+import type { ClienteDTO } from "../types/entities/cliente/ClienteDTO";
+import { putCliente } from "../helpers/putCliente";
+
+// Función opcional para cache-busting visual (por si acaso)
+const noCache = (url?: string | null) =>
+  url ? `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}` : "";
+
 const MiPerfil = () => {
-    const auth = getAuth();
-    const user = auth.currentUser;
+  const auth = getAuth();
+  const user = auth.currentUser || undefined;
 
-    const isPasswordUser = user?.providerData.some(
-        (provider) => provider.providerId === "password"
-    );
+  const usuario = useSelector((state: any) => state.user);
+  const dispatch = useDispatch();
 
-    const usuario = useSelector((state: any) => state.user)
-    const imagenPerfil = usuario.photoURL || user?.photoURL || fotoPerfil;
-    const dispatch = useDispatch();
+  const isPasswordUser = !!user?.providerData.some((p) => p.providerId === "password");
 
-    useEffect(() => {
-        const verificarEstadoEmail = async () => {
-            if (user) {
-                await reload(user);
-                if (user.emailVerified && !usuario.AuthenticatedEmail) {
-                    dispatch(setUser({
-                        ...usuario,
-                        AuthenticatedEmail: true,
-                    }));
-                }
-            }
-        };
+  // UI state
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [nombre, setNombre] = useState(usuario.fullname || "");
+  const [modalConfirmacion, setModalConfirmacion] = useState(false);
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [revisando, setRevisando] = useState(false);
+  const verificandoRef = useRef(false);
 
-        verificarEstadoEmail();
-    }, [user, usuario.AuthenticatedEmail, dispatch]);
+  // ========= Cloudinary =========
+  const preset_name = import.meta.env.VITE_PRESETNAME;
+  const cloud_name = import.meta.env.VITE_CLOUDNAME;
 
-    const actualizarPerfil = async () => {
-        if (!user) return;
+  // imagen persistida actual
+  const [imagenPerfil, setImagenPerfil] = useState(
+    usuario.photoURL || user?.photoURL || ""
+  );
+  const [tempPreview, setTempPreview] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
 
-        try {
-            // Cambiar el nombre
-            if (nombre !== usuario.fullname) {
-                await updateProfile(user, {
-                    displayName: nombre
-                });
-            }
-
-            // Cambiar la contraseña
-            if (isPasswordUser && (password || repeatPassword)) {
-                if (password !== repeatPassword) {
-                    return (
-                        toast.error('Las contraseñas no coinciden', {
-                            duration: 3000
-                        })
-                    )
-                    return
-                }
-
-                if (password.length < 6) {
-                    toast.error('La contraseña debe tener al menos 6 caracteres', {
-                        duration: 3000
-                    })
-                    return
-                }
-
-                await updatePassword(user, repeatPassword);
-                console.log("Contraseña actualizada con éxito");
-            }
-
-            dispatch(setUser({
-                fullname: nombre,
-                email: usuario.email,
-                token: usuario.token,
-                AuthenticatedEmail: usuario.AuthenticatedEmail,
-                AuthenticatedDocs: usuario.AuthenticatedDocs,
-            }));
-
-            toast.success('Perfil actualizado con exito', {
-                duration: 3000
-            })
-
-            setModoEdicion(false);
-            setPassword('');
-            setRepeatPassword('');
-        } catch (error: any) {
-            toast.error('Error al actualizar el perfil:' + error.message, {
-                duration: 3000
-            })
+  // --- Helpers de verificación ---
+  const patchVerificacionBackend = async (clienteId: number, token?: string) => {
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/clientes/verificacion-correo/${clienteId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         }
+      );
+      if (!res.ok) return false;
+      const data = await res.json();
+      dispatch(
+        setUser({
+          ...usuario,
+          AuthenticatedEmail: !!data?.correoVerificado,
+          AuthenticatedDocs:
+            data?.documentoVerificado ?? usuario.AuthenticatedDocs,
+        })
+      );
+      return !!data?.correoVerificado;
+    } catch {
+      return false;
     }
+  };
 
-    const [modoEdicion, setModoEdicion] = useState<boolean>(false);
-    const [nombre, setNombre] = useState<string>(usuario.fullname)
-    const [modalConfirmacion, setModalConfirmacion] = useState<boolean>(false);
-    const [password, setPassword] = useState<string>("");
-    const [repeatPassword, setRepeatPassword] = useState<string>("");
+  const syncVerificacion = async () => {
+    if (!user || verificandoRef.current) return;
+    verificandoRef.current = true;
+    setRevisando(true);
 
-    const abrirModalConfirmacion = () => {
-        setModalConfirmacion(!modalConfirmacion)
-    }
-
-    const editar = () => {
-        setModoEdicion(!modoEdicion);
-    }
-
-    const enviarCodigo = async () => {
-        try {
-            await sendEmailVerification(user);
-            console.log("Código de verificación enviado");
-        } catch (error: any) {
-            console.error("Error al enviar código:", error);
+    try {
+      await reload(user);
+      if (user.emailVerified && !usuario.AuthenticatedEmail) {
+        dispatch(setUser({ ...usuario, AuthenticatedEmail: true }));
+        const token = await user.getIdToken().catch(() => undefined);
+        if (usuario.id) {
+          const ok = await patchVerificacionBackend(usuario.id, token);
+          if (ok) toast.success("Email verificado correctamente", { duration: 2500 });
         }
+      }
+    } finally {
+      setRevisando(false);
+      verificandoRef.current = false;
+    }
+  };
+
+  useEffect(() => {
+    if (user && !usuario.AuthenticatedEmail) syncVerificacion();
+  }, [user, usuario.AuthenticatedEmail, usuario.id]);
+
+  const enviarCodigo = async () => {
+    if (!user) return toast.error("No hay usuario autenticado.");
+    try {
+      await sendEmailVerification(user);
+      toast.success("Correo de verificación enviado", { duration: 2500 });
+      setModalConfirmacion(false);
+    } catch (e: any) {
+      toast.error("No se pudo enviar el correo: " + (e?.message || "Error"));
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Subí una imagen válida");
+      return;
     }
 
-    const cambiarFotoPerfil = () => {
+    if (tempPreview) URL.revokeObjectURL(tempPreview);
 
+    setPendingFile(file);
+    setTempPreview(URL.createObjectURL(file));
+    toast("Nueva foto lista para guardar", { icon: "🖼️" });
+  };
+
+  const actualizarPerfil = async () => {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+
+      let newPhotoUrl: string | undefined;
+
+      // Subida a Cloudinary
+      if (pendingFile) {
+        if (!cloud_name || !preset_name) {
+          throw new Error("Faltan variables de Cloudinary");
+        }
+
+        const fd = new FormData();
+        fd.append("file", pendingFile);
+        fd.append("upload_preset", preset_name);
+
+        const folder = `usuarios/${usuario?.id || user?.uid || "sin_id"}`;
+        // public_id único siempre
+        const publicId = `avatar_${usuario?.id || user?.uid}_${Date.now()}`;
+        fd.append("folder", folder);
+        fd.append("public_id", publicId);
+
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
+          {
+            method: "POST",
+            body: fd,
+          }
+        );
+        const json = await res.json();
+        if (!res.ok)
+          throw new Error(json?.error?.message || "Fallo al subir a Cloudinary");
+
+        const rawUrl = json.secure_url as string; // guardar
+        const viewUrl = noCache(rawUrl); // mostrar para romper cache de navegador
+
+        newPhotoUrl = rawUrl;
+        setImagenPerfil(viewUrl);
+      }
+
+      // Nombre
+      if (nombre && nombre !== usuario.fullname) {
+        await updateProfile(user, { displayName: nombre });
+      }
+
+      // Foto
+      if (newPhotoUrl) {
+        await updateProfile(user, { photoURL: newPhotoUrl }).catch(() => {});
+        await reload(user);
+      }
+
+      // Password
+      if (isPasswordUser && (password || repeatPassword)) {
+        if (password !== repeatPassword) {
+          toast.error("Las contraseñas no coinciden");
+          setSaving(false);
+          return;
+        }
+        if (password.length < 6) {
+          toast.error("La contraseña debe tener al menos 6 caracteres");
+          setSaving(false);
+          return;
+        }
+        await updatePassword(user, repeatPassword);
+      }
+
+      // Actualizar backend
+      const dtoBackend: ClienteDTO = {
+        uid: user.uid,
+        nombreCompleto: nombre || usuario.fullname || "",
+        correoElectronico: user.email || usuario.email || "",
+        fotoPerfil: {
+          urlImagen: newPhotoUrl ?? imagenPerfil ?? "",
+        },
+      };
+
+      const token = await user.getIdToken().catch(() => undefined);
+
+      if (!usuario?.id) {
+        throw new Error("No se encontró el id del cliente en el estado.");
+      }
+
+      const actualizado = await putCliente(usuario.id, dtoBackend, token);
+
+      dispatch(
+        setUser({
+          ...usuario,
+          id: actualizado.id,
+          fullname: actualizado.nombreCompleto,
+          email: actualizado.correoElectronico,
+          photoURL:
+            actualizado.fotoPerfil?.urlImagen ??
+            (newPhotoUrl || usuario.photoURL),
+          AuthenticatedEmail: actualizado.correoVerificado,
+          AuthenticatedDocs: actualizado.documentoVerificado,
+        })
+      );
+
+      toast.success("Perfil actualizado");
+
+      setModoEdicion(false);
+      setPassword("");
+      setRepeatPassword("");
+      if (tempPreview) URL.revokeObjectURL(tempPreview);
+      setTempPreview(null);
+      setPendingFile(null);
+    } catch (e: any) {
+      toast.error("Error al actualizar: " + (e?.message || "Desconocido"));
+    } finally {
+      setSaving(false);
     }
+  };
 
-    return (
-        // Contenedor principal que ocupa toda la altura de la pantalla
-        <div className="min-h-screen flex flex-col bg-secondary">
-            <UsuarioHeader />
+  return (
+    <div className="min-h-screen flex flex-col bg-secondary">
+      <UsuarioHeader />
 
-            {/* Contenido principal que se expande para ocupar el espacio disponible */}
-            <div className="flex-grow flex flex-col items-center pt-20 md:flex-row md:h-auto lg:min-h-auto md:justify-evenly lg:px-20">
-                <div className="flex flex-col md:mb-20">
-                    <h1 className="text-4xl text-white md:mb-5">Mi Perfil</h1>
-                    <div className="relative group w-35 h-35 mt-2 md:w-50 md:h-50 cursor-pointer" onClick={cambiarFotoPerfil} >
-                        <img src={imagenPerfil} className="w-full h-full rounded-full object-cover border-2 border-white group-hover:brightness-75 transition-all duration-150" alt="Foto de Perfil" />
-                        <input type="file" accept="image/*" className="hidden" />
-                        {isPasswordUser && (
-                            <div className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-full transition-all duration-150">
-                                <p className="text-xs">Cambiar foto</p>
-                            </div>
-                        )}
+      <div className="flex-grow flex flex-col items-center pt-20 md:flex-row md:justify-evenly lg:px-20">
+        <div className="flex flex-col md:mb-20">
+          <h1 className="text-4xl text-white md:mb-5">Mi Perfil</h1>
 
-                    </div>
-
-
+          <label
+            className={`relative group w-35 h-35 mt-2 md:w-50 md:h-50 ${
+              isPasswordUser && modoEdicion
+                ? "cursor-pointer"
+                : "cursor-default"
+            } block`}
+            htmlFor={isPasswordUser && modoEdicion ? "imagenCambiar" : undefined}
+          >
+            {isPasswordUser && modoEdicion ? (
+              <>
+                <img
+                  key={tempPreview || imagenPerfil}
+                  src={tempPreview || imagenPerfil}
+                  className="w-full h-full rounded-full object-cover brightness-50"
+                  alt="Foto de Perfil"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white font-medium">
+                    {saving
+                      ? "Guardando..."
+                      : pendingFile
+                      ? "Guardar para aplicar"
+                      : "Cambiar foto"}
+                  </span>
                 </div>
-
-                <div className="flex flex-col items-start mt-6 gap-5 text-white mb-7 w-full max-w-3/4 md:w-90">
-                    {!modoEdicion ? (
-                        <>
-                            <div className="border-b-1 border-b-black w-full">
-                                <p className="text-xs font-light">Nombre Completo:</p>
-                                <p className="text-md">{usuario.fullname}</p>
-                            </div>
-                            <div className="border-b-1 border-b-black w-full">
-                                <p className="text-xs font-light">Correo Electronico:</p>
-                                <p className="text-md">{usuario.email}</p>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="w-full">
-                                <label htmlFor="nombre" className="text-xs font-light">Nombre Completo:</label>
-                                <input id="nombre" type="text" value={nombre}
-                                    onChange={e => setNombre(e.target.value)} className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0" />
-                            </div>
-                            <div className="border-b-1 border-b-black w-full">
-                                <p className="text-xs font-light">Correo Electronico:</p>
-                                <p className="text-md">{usuario.email}</p>
-                            </div>
-                            {isPasswordUser && (
-                                <>
-                                    <div className="w-full">
-                                        <label htmlFor="newPassword" className="text-xs font-light">Nueva Contraseña</label>
-                                        <input id="newPassword" type="password" value={password}
-                                            onChange={e => setPassword(e.target.value)} placeholder="*******"
-                                            className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0" />
-                                    </div>
-                                    <div className="w-full">
-                                        <label htmlFor="repeatNewPassword" className="text-xs font-light">Repetir Contraseña:</label>
-                                        <input id="repeatNewPassword" type="password" value={repeatPassword}
-                                            onChange={e => setRepeatPassword(e.target.value)} placeholder="*******"
-                                            className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0" />
-                                    </div>
-                                </>
-                            )}
-
-                            {!isPasswordUser && (
-                                <p className="text-sm text-yellow-300 mt-2">
-                                    Este usuario ha iniciado sesión con Google y no puede cambiar su contraseña.
-                                </p>
-                            )}
-
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {/* Sección de alertas y botones */}
-            <div className="flex flex-col items-center bg-secondary pb-10 gap-5 text-white">
-                {!usuario.AuthenticatedEmail && (
-                    <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 cursor-pointer w-full max-w-3/4" onClick={abrirModalConfirmacion}>
-                        <MdPriorityHigh fontSize={30} color="red" />
-                        <p className="text-xs">Falta Verificacion del correo</p>
-                    </div>
+              </>
+            ) : (
+              <>
+                <img
+                  key={tempPreview || imagenPerfil}
+                  src={tempPreview || imagenPerfil}
+                  className="w-full h-full rounded-full object-cover"
+                  alt="Foto de Perfil"
+                />
+                {!isPasswordUser && modoEdicion && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs px-2 py-1 rounded bg-black/60 text-white">
+                      Foto vinculada a Google
+                    </span>
+                  </div>
                 )}
-
-                {!usuario.AuthenticatedDocs && (
-                    <Link to={'/userVerificacion'} className="w-full max-w-3/4 m-auto">
-                        <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 cursor-pointer w-full ">
-                            <MdPriorityHigh fontSize={30} color="red" />
-                            <p className="text-xs">Falta Verificacion de documentos</p>
-                        </div>
-                    </Link>
-
-                )}
-
-                {!modoEdicion ? (
-                    <ButtonSecondary onClick={editar} text="Editar Datos" className="m-auto w-40" bgColor="bg-white" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" />
-                ) : (
-                    <div className="flex justify-center gap-10">
-                        <ButtonSecondary onClick={actualizarPerfil} text="Guardar Cambios" className="m-auto w-40" color="text-white" bgColor="bg-primary" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" />
-                        <ButtonSecondary onClick={editar} text="Cancelar" className="m-auto w-40" color="text-white" bgColor="bg-red-900" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" />
-
-
-                    </div>
-                )}
-            </div>
-
-            <Footer />
-
-            {modalConfirmacion && (
-                <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
-                    <div className="bg-primary p-6 pt-2 rounded-lg shadow-lg max-w-md w-full mx-4 flex flex-col items-center justify-center text-center">
-                        <AiOutlineClose className="self-end" onClick={abrirModalConfirmacion} fontSize={20} color="white" />
-                        <h3 className="text-2xl font-medium mb-2 text-white">Verificacion de Correo Electronico</h3>
-                        <p className="mb-4 text-white">Toque para recibir un correo para confirmar</p>
-                        <ButtonTertiary onClick={enviarCodigo} text='Enviar Correo' maxWidth="max-w-[160px]" className="px-5 cursor-pointer" fontSize="text-md" />
-                    </div>
-                </div>
+              </>
             )}
+          </label>
+
+          <input
+            type="file"
+            name="imagenCambiar"
+            id="imagenCambiar"
+            className="hidden"
+            onChange={handleImageChange}
+            accept="image/*"
+            disabled={!isPasswordUser || !modoEdicion}
+          />
         </div>
-    )
-}
+
+        <div className="flex flex-col items-start mt-6 gap-5 text-white mb-7 w-full max-w-3/4 md:w-90">
+          {!modoEdicion ? (
+            <>
+              <div className="border-b-1 border-b-black w-full">
+                <p className="text-xs font-light">Nombre Completo:</p>
+                <p className="text-md">{usuario.fullname}</p>
+              </div>
+              <div className="border-b-1 border-b-black w-full">
+                <p className="text-xs font-light">Correo Electrónico:</p>
+                <p className="text-md">{usuario.email}</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="w-full">
+                <label htmlFor="nombre" className="text-xs font-light">
+                  Nombre Completo:
+                </label>
+                <input
+                  id="nombre"
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0"
+                />
+              </div>
+
+              {isPasswordUser ? (
+                <>
+                  <div className="w-full">
+                    <label htmlFor="newPassword" className="text-xs font-light">
+                      Nueva Contraseña
+                    </label>
+                    <input
+                      id="newPassword"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="*******"
+                      className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0"
+                    />
+                  </div>
+                  <div className="w-full">
+                    <label
+                      htmlFor="repeatNewPassword"
+                      className="text-xs font-light"
+                    >
+                      Repetir Contraseña:
+                    </label>
+                    <input
+                      id="repeatNewPassword"
+                      type="password"
+                      value={repeatPassword}
+                      onChange={(e) => setRepeatPassword(e.target.value)}
+                      placeholder="*******"
+                      className="bg-tertiary w-full rounded-3xl h-8 pl-3 text-md outline-0"
+                    />
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-yellow-300 mt-2">
+                  Este usuario inició sesión con Google y no puede cambiar su
+                  contraseña.
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center bg-secondary pb-10 gap-5 text-white">
+        {!usuario.AuthenticatedEmail && (
+          <>
+            <div
+              className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 w-full max-w-3/4"
+              onClick={() => setModalConfirmacion(true)}
+            >
+              <MdPriorityHigh fontSize={30} color="red" />
+              <p className="text-xs">Falta verificación del correo</p>
+            </div>
+
+            <ButtonTertiary
+              onClick={syncVerificacion}
+              text={revisando ? "Revisando..." : "Revisar verificación ahora"}
+              maxWidth="max-w-[220px]"
+              className="px-5 cursor-pointer"
+              fontSize="text-md"
+            />
+          </>
+        )}
+
+        {!usuario.AuthenticatedDocs && (
+          <Link to="/userVerificacion" className="w-full max-w-3/4 m-auto">
+            <div className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 w-full">
+              <MdPriorityHigh fontSize={30} color="red" />
+              <p className="text-xs">Falta verificación de documentos</p>
+            </div>
+          </Link>
+        )}
+
+        {!modoEdicion ? (
+          <ButtonSecondary
+            text="Editar Datos"
+            className="m-auto w-40"
+            bgColor="bg-white"
+            maxWidth="max-w-[240px]"
+            fontWeight="font-medium"
+            fontSize="text-md"
+            height="h-8"
+            onClick={() => setModoEdicion(true)}
+          />
+        ) : (
+          <div className="flex justify-center gap-10">
+            <ButtonSecondary
+              onClick={actualizarPerfil}
+              text={saving ? "Guardando..." : "Guardar Cambios"}
+              className="m-auto w-40"
+              color="text-white"
+              bgColor="bg-primary"
+              maxWidth="max-w-[240px]"
+              fontWeight="font-medium"
+              fontSize="text-md"
+              height="h-8"
+              disabled={saving}
+            />
+            <ButtonSecondary
+              text="Cancelar"
+              className="m-auto w-40"
+              color="text-white"
+              bgColor="bg-red-900"
+              maxWidth="max-w-[240px]"
+              fontWeight="font-medium"
+              fontSize="text-md"
+              height="h-8"
+              onClick={() => {
+                setModoEdicion(false);
+                setNombre(usuario.fullname || "");
+                setPassword("");
+                setRepeatPassword("");
+                if (tempPreview) URL.revokeObjectURL(tempPreview);
+                setTempPreview(null);
+                setPendingFile(null);
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      <Footer />
+
+      {modalConfirmacion && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
+          <div className="bg-primary p-6 pt-2 rounded-lg shadow-lg max-w-md w-full mx-4 text-center">
+            <AiOutlineClose
+              className="ml-auto cursor-pointer"
+              onClick={() => setModalConfirmacion(false)}
+              fontSize={20}
+              color="white"
+            />
+            <h3 className="text-2xl font-medium mb-2 text-white">
+              Verificación de Correo
+            </h3>
+            <p className="mb-4 text-white">
+              Toca para recibir un correo de confirmación
+            </p>
+            <ButtonTertiary
+              onClick={enviarCodigo}
+              text="Enviar Correo"
+              maxWidth="max-w-[160px]"
+              className="px-5 cursor-pointer"
+              fontSize="text-md"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default MiPerfil;

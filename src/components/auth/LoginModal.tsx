@@ -1,73 +1,53 @@
+// src/pages/modals/LoginModal.tsx
 import { FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { RegisterModal } from "./RegisterModal";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
-
-// Google
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+// Firebase
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "../../config/firebase";
 
-// Formulario
+// Formik / Yup
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as yup from "yup";
 
 // Redux
-import { useDispatch } from 'react-redux';
-import { setUser } from '../../reducer/user/userSlice';
+import { useDispatch } from "react-redux";
+import { setUser } from "../../reducer/user/userSlice";
+
+// Tipos
 import type { ClienteDTO } from "../../types/entities/cliente/ClienteDTO";
-import type { UsuarioDTO } from "../../types/entities/usuario/UsuarioDTO";
+import type { ClienteResponseDTO } from "../../types/entities/cliente/ClienteResponseDTO";
+
+
+import { ensureClienteConId } from "../../helpers/ensureClienteConId";
 
 interface LoginModalProps {
   onClose: () => void;
 }
 
+const schema = yup.object().shape({
+  email: yup.string().required("El Correo es requerido").email("El email no tiene un formato válido"),
+  password: yup.string().required("La contraseña es requerida").min(6, "La contraseña debe tener al menos 6 caracteres"),
+});
+
 export const LoginModal = ({ onClose }: LoginModalProps) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [AbrirRegistro, setAbrirRegistro] = useState(false);
 
-  // Cerrar Modal
   const handleBackdropClick = (e: any) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  // Verificacion de cliente existente
-  const registrarClienteSiNoExiste = async (cliente: ClienteDTO) => {
-    try {
-      const checkResponse = await fetch(`http://localhost:8080/api/clientes/${cliente.usuario.uid}`);
-
-      if (checkResponse.status === 200) {
-        console.log("Cliente ya registrado");
-      }
-
-      if (checkResponse.status === 404) {
-        const saveResponse = await fetch("http://localhost:8080/api/clientes/save", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(cliente),
-        });
-
-        if (!saveResponse.ok) {
-          throw new Error("Error al registrar nuevo cliente");
-        }
-
-        toast.success('Usuario registrado con exito', {
-          position: "bottom-center"
-        })
-
-      } else {
-        throw new Error("Error al verificar existencia del cliente");
-      }
-    } catch (error) {
-      console.error("Error al registrar/verificar cliente:", error);
-    }
-  };
-
-  // Google login
+  // Login con Google (guarda id + uid en Redux)
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
@@ -75,93 +55,161 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
 
       const uid = result.user.uid;
       const nombre = result.user.displayName || "Sin nombre";
-      const email = result.user.email!;
+      const email = result.user.email || "";
+      const foto = result.user.photoURL || "";
       const token = await result.user.getIdToken();
+      const emailVerified = result.user.emailVerified;
 
-      const usuario: UsuarioDTO = {
+      const dto: ClienteDTO = {
         uid,
         nombreCompleto: nombre,
         correoElectronico: email,
+        fotoPerfil: { urlImagen: foto },
       };
 
-      const cliente: ClienteDTO = { usuario };
+      let resp: ClienteResponseDTO;
+      try {
+        resp = await ensureClienteConId(dto);
+      } catch (e) {
+        console.warn("[google login] No se pudo asegurar/obtener id del cliente:", e);
+        toast.error("No se pudo sincronizar con el backend");
+        return; // si querés igual continuar sin id, podés quitar este return
+      }
 
-      await registrarClienteSiNoExiste(cliente);
-
-      dispatch(setUser({
-        fullname: nombre,
-        email,
-        token,
-      }));
+      dispatch(
+        setUser({
+          id: resp.id,                                   // 👈 id desde el backend
+          uid: resp.uid,                                 // 👈 uid desde el backend
+          fullname: resp.nombreCompleto ?? nombre,
+          email: resp.correoElectronico ?? email,
+          token,
+          photoURL: resp.fotoPerfil?.urlImagen ?? foto,
+          AuthenticatedEmail: resp.correoVerificado ?? emailVerified,
+          AuthenticatedDocs: resp.documentoVerificado ?? false,
+        })
+      );
 
       navigate("/Inicio");
     } catch (error) {
       console.error("Error signing in with Google", error);
+      toast.error("No se pudo iniciar sesión con Google");
     }
   };
 
-
-  const [AbrirRegistro, setAbrirRegistro] = useState(false);
-
-  const schema = yup.object().shape({
-    email: yup.string().required("El Correo es requerido").email("El email no tiene un formato válido"),
-    password: yup.string().required("La contraseña es requerida").min(6, "La contraseña debe tener al menos 6 caracteres")
-  });
-
   return (
     <>
-      <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 flex items-center justify-center">
+      <div
+        onClick={handleBackdropClick}
+        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 flex items-center justify-center"
+      >
         <div className="w-full max-w-md min-h-fit flex flex-col bg-primary z-50 text-white rounded-lg p-4 relative">
-          <FaTimes onClick={onClose} className="absolute top-4 right-4 text-gray-400 text-lg transition-colors cursor-pointer hover:text-white" />
+          <FaTimes
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 text-lg transition-colors cursor-pointer hover:text-white"
+          />
           <div className="mt-6 mb-4">
-            <h2 className="font-semibold text-xl">Iniciar Sesion</h2>
-            <p className="text-xs mt-1">Vamos inicia sesion!</p>
+            <h2 className="font-semibold text-xl">Iniciar Sesión</h2>
+            <p className="text-xs mt-1">¡Vamos, iniciá sesión!</p>
           </div>
+
           <Formik
             initialValues={{ email: "", password: "" }}
+            validationSchema={schema}
             onSubmit={async (values, { setSubmitting, setFieldError }) => {
               try {
-                const result = await signInWithEmailAndPassword(auth, values.email, values.password);
-                const nombre = result.user.displayName;
-                const email = result.user.email;
+                // 1) Login Firebase
+                const result = await signInWithEmailAndPassword(
+                  auth,
+                  values.email,
+                  values.password
+                );
+
+                const uid = result.user.uid;
+                const nombre = result.user.displayName || values.email.split("@")[0] || "Usuario";
+                const email = result.user.email || values.email;
+                const foto = result.user.photoURL || "";
                 const token = await result.user.getIdToken();
-                dispatch(setUser({
-                  fullname: nombre || email?.split("@")[0] || "Usuario",
-                  email,
-                  token,
-                }));
+                const emailVerified = result.user.emailVerified;
+
+                // 2) Back: asegurar y obtener id
+                const dto: ClienteDTO = {
+                  uid,
+                  nombreCompleto: nombre,
+                  correoElectronico: email,
+                  fotoPerfil: { urlImagen: foto },
+                };
+
+                let resp: ClienteResponseDTO;
+                try {
+                  resp = await ensureClienteConId(dto);
+                } catch (e) {
+                  console.warn("[login] No se pudo asegurar/obtener id del cliente:", e);
+                  toast.error("No se pudo sincronizar con el backend");
+                  return; // si querés igual continuar sin id, podés quitar este return
+                }
+
+                // 3) Guardar en Redux con id + uid
+
+                const photoURLSafe =
+                  (resp.fotoPerfil?.urlImagen && resp.fotoPerfil.urlImagen.trim()) ||
+                  (foto && foto.trim()) ||
+                  undefined;
+
+
+                dispatch(
+                  setUser({
+                    id: resp.id,
+                    uid: resp.uid,
+                    fullname: resp.nombreCompleto ?? nombre,
+                    email: resp.correoElectronico ?? email,
+                    token,
+                    photoURL: photoURLSafe,
+                    AuthenticatedEmail: resp.correoVerificado ?? emailVerified,
+                    AuthenticatedDocs: resp.documentoVerificado ?? false,
+                  })
+                );
+
                 navigate("/Inicio");
-              } catch (error) {
-                setFieldError("password", "Email o contraseña incorrectos");
+              } catch (error: any) {
+                const code = error?.code || "";
+                if (code === "auth/invalid-credential" || code === "auth/wrong-password") {
+                  setFieldError("password", "Email o contraseña incorrectos");
+                } else if (code === "auth/user-not-found") {
+                  setFieldError("email", "El usuario no existe");
+                } else if (code === "auth/too-many-requests") {
+                  setFieldError("password", "Demasiados intentos, intentá más tarde");
+                } else {
+                  setFieldError("password", "No se pudo iniciar sesión");
+                  console.error("Login error:", error);
+                }
                 setSubmitting(false);
               }
             }}
-            validationSchema={schema}
           >
             {({ isSubmitting }) => (
               <Form className="flex flex-col w-full gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="email">Correo</label>
-                  <Field type="email" name="email" id="email" placeholder="ejemplo@gmail.com"
-                    className="border-b-tertiary border-b-2 outline-0 bg-transparent" />
+                  <Field type="email" name="email" id="email" placeholder="ejemplo@gmail.com" className="border-b-tertiary border-b-2 outline-0 bg-transparent" />
                   <ErrorMessage name="email">
-                    {msg => <p className="text-red-500 text-xs mt-1">{msg}</p>}
+                    {(msg) => <p className="text-red-500 text-xs mt-1">{msg}</p>}
                   </ErrorMessage>
                 </div>
                 <div className="flex flex-col gap-2">
                   <label htmlFor="password">Contraseña</label>
-                  <Field type="password" name="password" id="password" placeholder="Contraseña123"
-                    className="border-b-tertiary border-b-2 outline-0 bg-transparent" />
+                  <Field type="password" name="password" id="password" placeholder="Contraseña123" className="border-b-tertiary border-b-2 outline-0 bg-transparent" />
                   <ErrorMessage name="password">
-                    {msg => <p className="text-red-500 text-xs mt-1">{msg}</p>}
+                    {(msg) => <p className="text-red-500 text-xs mt-1">{msg}</p>}
                   </ErrorMessage>
                 </div>
                 <div className="mt-4 flex flex-col gap-4">
-                  <button type="submit" disabled={isSubmitting} className="h-10 rounded-lg w-full bg-secondary cursor-pointer text-lg transition-colors hover:bg-tertiary">
+                  <button type="submit" disabled={isSubmitting} className="h-10 rounded-lg w-full bg-secondary cursor-pointer text-lg transition-colors hover:bg-tertiary" >
                     {isSubmitting ? "CARGANDO..." : "CONTINUAR"}
                   </button>
-                  <button type="button" className="h-10 rounded-lg w-full bg-white text-black flex gap-2 justify-center cursor-pointer items-center text-xs" onClick={handleGoogleSignIn}><FcGoogle /> Sign in with Google </button>
-                  <p onClick={() => setAbrirRegistro(true)} className="cursor-pointer text-center text-xs mt-2">¿No tenés cuenta? Registrate</p>
+                  <button type="button" className="h-10 rounded-lg w-full bg-white text-black flex gap-2 justify-center cursor-pointer items-center text-xs" onClick={handleGoogleSignIn} >
+                    <FcGoogle /> Sign in with Google
+                  </button>
+                  <p onClick={() => setAbrirRegistro(true)} className="cursor-pointer text-center text-xs mt-2" > ¿No tenés cuenta? Registrate </p>
                 </div>
               </Form>
             )}
@@ -170,5 +218,5 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
       </div>
       {AbrirRegistro && <RegisterModal onClose={() => setAbrirRegistro(false)} />}
     </>
-  )
-}
+  );
+};
