@@ -10,6 +10,7 @@ const userFromStorage = JSON.parse(localStorage.getItem('user')) || {
   photoURL: '',
   AuthenticatedEmail: false,
   AuthenticatedDocs: false,
+  rol: "CLIENTE",
 }
 
 export const userSlice = createSlice({
@@ -24,8 +25,11 @@ export const userSlice = createSlice({
       if (p.email !== undefined) state.email = p.email
       if (p.token !== undefined) state.token = p.token
       if (p.photoURL !== undefined) state.photoURL = p.photoURL
+
       state.AuthenticatedEmail = p.AuthenticatedEmail ?? state.AuthenticatedEmail
       state.AuthenticatedDocs = p.AuthenticatedDocs ?? state.AuthenticatedDocs
+
+      state.rol = p.rol ?? state.rol ?? 'CLIENTE'
       localStorage.setItem('user', JSON.stringify(state))
     },
     logout: (state) => {
@@ -37,10 +41,15 @@ export const userSlice = createSlice({
       state.photoURL = ''
       state.AuthenticatedEmail = false
       state.AuthenticatedDocs = false
+      state.rol = ''
       localStorage.removeItem('user')
     }
   }
 })
 
 export const { setUser, logout } = userSlice.actions
+
+export const selectUser = (state) => state.user
+export const selectUserRol = (state) => state.user?.rol || 'CLIENTE'
+
 export default userSlice.reducer

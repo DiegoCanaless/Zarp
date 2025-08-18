@@ -86,10 +86,16 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
           photoURL: resp.fotoPerfil?.urlImagen ?? foto,
           AuthenticatedEmail: resp.correoVerificado ?? emailVerified,
           AuthenticatedDocs: resp.documentoVerificado ?? false,
+          rol: resp.rol ?? "CLIENTE"
         })
       );
 
-      navigate("/Inicio");
+      const destino =
+        resp.rol === 'SUPERADMIN' || resp.rol === 'EMPLEADO'
+          ? '/Welcome'
+          : '/Inicio'
+
+      navigate(destino)
     } catch (error) {
       console.error("Error signing in with Google", error);
       toast.error("No se pudo iniciar sesión con Google");
@@ -166,10 +172,17 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
                     photoURL: photoURLSafe,
                     AuthenticatedEmail: resp.correoVerificado ?? emailVerified,
                     AuthenticatedDocs: resp.documentoVerificado ?? false,
+                    rol: resp.rol ?? "CLIENTE"
                   })
                 );
 
-                navigate("/Inicio");
+                const destino =
+                  resp.rol === 'SUPERADMIN' || resp.rol === 'EMPLEADO'
+                    ? '/Welcome'
+                    : '/Inicio'
+
+                navigate(destino)
+
               } catch (error: any) {
                 const code = error?.code || "";
                 if (code === "auth/invalid-credential" || code === "auth/wrong-password") {

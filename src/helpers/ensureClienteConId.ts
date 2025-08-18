@@ -4,38 +4,40 @@ import type { ClienteResponseDTO } from "../types/entities/cliente/ClienteRespon
 
 const API = "http://localhost:8080/api/clientes";
 
+async function getClientePorUid(uid: string): Promise<ClienteResponseDTO | null> {
+    const res = await fetch(`${API}/getByUid/${encodeURIComponent(uid)}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error("No se pudo obtener el cliente por uid");
+    return res.json();
+}
+
 /**
  * Asegura el cliente y devuelve SIEMPRE el ClienteResponseDTO con id:
  * - Si NO existe -> POST /save y retorna el body (con id).
- * - Si SÍ existe -> GET /api/clientes, filtra por uid y retorna ese registro.
+ * - Si SÍ existe -> GET /getByUid/{uid} y retorna ese registro.
  */
 export async function ensureClienteConId(cliente: ClienteDTO): Promise<ClienteResponseDTO> {
-    // 1) Verificar existencia por UID (boolean)
+    // 1) ¿Existe?
     const checkRes = await fetch(`${API}/existe-uid/${encodeURIComponent(cliente.uid)}`);
     if (!checkRes.ok) throw new Error("No se pudo verificar el UID");
     const existe: boolean = await checkRes.json();
 
     if (!existe) {
-        // 2) Crear y devolver el creado (incluye id)
+        // 2) Crear y devolver
         const saveRes = await fetch(`${API}/save`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(cliente),
         });
         if (!saveRes.ok) throw new Error("Error al registrar nuevo cliente");
-        const creado: ClienteResponseDTO = await saveRes.json();
-        return creado;
+        return saveRes.json();
     }
 
-    // 3) Ya existe -> traer todos y filtrar por uid
-    const listRes = await fetch(`${API}`);
-    if (!listRes.ok) throw new Error("No se pudo obtener la lista de clientes");
-    const lista: ClienteResponseDTO[] = await listRes.json();
-
-    const encontrado = lista.find(c => c.uid === cliente.uid);
+    // 3) Ya existe -> traer solo ese uid
+    const encontrado = await getClientePorUid(cliente.uid);
     if (!encontrado) {
-        // edge case raro: existeByUid=true pero no aparece en findAll
-        throw new Error("El cliente existe pero no se pudo resolver su id desde la lista");
+        // Edge case: existe=true pero no se encuentra (condición de carrera, etc.)
+        throw new Error("El cliente existe pero no se pudo resolver por uid");
     }
     return encontrado;
 }

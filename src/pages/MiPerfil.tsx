@@ -21,6 +21,9 @@ import { Link } from "react-router-dom";
 import type { ClienteDTO } from "../types/entities/cliente/ClienteDTO";
 import { putCliente } from "../helpers/putCliente";
 
+// ✅ Nuevo helper de Cloudinary desacoplado
+import { uploadImageCloudinary } from "../helpers/cloudinary";
+
 // Función opcional para cache-busting visual (por si acaso)
 const noCache = (url?: string | null) =>
   url ? `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}` : "";
@@ -42,10 +45,6 @@ const MiPerfil = () => {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [revisando, setRevisando] = useState(false);
   const verificandoRef = useRef(false);
-
-  // ========= Cloudinary =========
-  const preset_name = import.meta.env.VITE_PRESETNAME;
-  const cloud_name = import.meta.env.VITE_CLOUDNAME;
 
   // imagen persistida actual
   const [imagenPerfil, setImagenPerfil] = useState(
@@ -144,35 +143,13 @@ const MiPerfil = () => {
 
       let newPhotoUrl: string | undefined;
 
-      // Subida a Cloudinary
+      // ✅ Subida a Cloudinary usando el helper reutilizable
       if (pendingFile) {
-        if (!cloud_name || !preset_name) {
-          throw new Error("Faltan variables de Cloudinary");
-        }
-
-        const fd = new FormData();
-        fd.append("file", pendingFile);
-        fd.append("upload_preset", preset_name);
-
         const folder = `usuarios/${usuario?.id || user?.uid || "sin_id"}`;
-        // public_id único siempre
         const publicId = `avatar_${usuario?.id || user?.uid}_${Date.now()}`;
-        fd.append("folder", folder);
-        fd.append("public_id", publicId);
 
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
-          {
-            method: "POST",
-            body: fd,
-          }
-        );
-        const json = await res.json();
-        if (!res.ok)
-          throw new Error(json?.error?.message || "Fallo al subir a Cloudinary");
-
-        const rawUrl = json.secure_url as string; // guardar
-        const viewUrl = noCache(rawUrl); // mostrar para romper cache de navegador
+        const rawUrl = await uploadImageCloudinary(pendingFile, folder, publicId);
+        const viewUrl = noCache(rawUrl);
 
         newPhotoUrl = rawUrl;
         setImagenPerfil(viewUrl);
@@ -358,10 +335,7 @@ const MiPerfil = () => {
                     />
                   </div>
                   <div className="w-full">
-                    <label
-                      htmlFor="repeatNewPassword"
-                      className="text-xs font-light"
-                    >
+                    <label htmlFor="repeatNewPassword" className="text-xs font-light">
                       Repetir Contraseña:
                     </label>
                     <input
@@ -376,8 +350,7 @@ const MiPerfil = () => {
                 </>
               ) : (
                 <p className="text-sm text-yellow-300 mt-2">
-                  Este usuario inició sesión con Google y no puede cambiar su
-                  contraseña.
+                  Este usuario inició sesión con Google y no puede cambiar su contraseña.
                 </p>
               )}
             </>
@@ -398,8 +371,9 @@ const MiPerfil = () => {
 
             <ButtonTertiary
               onClick={syncVerificacion}
-              text={revisando ? "Revisando..." : "Revisar verificación ahora"}
+              text={revisando ? "Revisando..." : "Revisar verificación"}
               maxWidth="max-w-[220px]"
+              bgColor="bg-primary"
               className="px-5 cursor-pointer"
               fontSize="text-md"
             />
@@ -427,7 +401,7 @@ const MiPerfil = () => {
             onClick={() => setModoEdicion(true)}
           />
         ) : (
-          <div className="flex justify-center gap-10">
+          <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row sm:gap-10 ">
             <ButtonSecondary
               onClick={actualizarPerfil}
               text={saving ? "Guardando..." : "Guardar Cambios"}
@@ -474,12 +448,8 @@ const MiPerfil = () => {
               fontSize={20}
               color="white"
             />
-            <h3 className="text-2xl font-medium mb-2 text-white">
-              Verificación de Correo
-            </h3>
-            <p className="mb-4 text-white">
-              Toca para recibir un correo de confirmación
-            </p>
+            <h3 className="text-2xl font-medium mb-2 text-white">Verificación de Correo</h3>
+            <p className="mb-4 text-white">Toca para recibir un correo de confirmación</p>
             <ButtonTertiary
               onClick={enviarCodigo}
               text="Enviar Correo"
