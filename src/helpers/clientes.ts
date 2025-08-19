@@ -4,14 +4,23 @@ import type { ClienteResponseDTO } from "../types/entities/cliente/ClienteRespon
 
 const API = "http://localhost:8080/api/clientes";
 
+async function getByUid(uid: string): Promise<ClienteResponseDTO> {
+    const res = await fetch(`${API}/getByUid/${encodeURIComponent(uid)}`);
+    if (!res.ok) throw new Error("No se pudo obtener el cliente por uid");
+    return res.json();
+}
+
+/**
+ * Registro estricto para CLIENTE:
+ * - Si no existe → crea y devuelve el creado (con rol, idealmente “CLIENTE” por default en el backend).
+ * - Si existe → lo trae por UID y lo devuelve (para tener rol/id/flags correctos).
+ */
 export async function ensureClienteStrict(cliente: ClienteDTO): Promise<ClienteResponseDTO> {
-    // 1) existe?
     const existsRes = await fetch(`${API}/existe-uid/${encodeURIComponent(cliente.uid)}`);
     if (!existsRes.ok) throw new Error("No se pudo verificar existencia del cliente");
     const exists: boolean = await existsRes.json();
 
     if (!exists) {
-        // 2) crear y LEER el body (trae id)
         const saveRes = await fetch(`${API}/save`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -19,12 +28,9 @@ export async function ensureClienteStrict(cliente: ClienteDTO): Promise<ClienteR
         });
         if (!saveRes.ok) throw new Error("Error al registrar nuevo cliente");
         const creado: ClienteResponseDTO = await saveRes.json();
-        return creado; // ✅ trae id
+        return creado;
     }
 
-    // 3) existe pero NO hay endpoint para traerlo por uid → no puedo obtener id
-    throw new Error(
-        "El cliente ya existe pero tu API no expone GET por UID. " +
-        "Agrega un endpoint (p.ej. GET /api/clientes/por-uid/{uid}) para poder obtener el id."
-    );
+    // 👉 Si ya existe, lo traemos para conocer rol/id/etc.
+    return getByUid(cliente.uid);
 }

@@ -82,11 +82,19 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
           photoURL: clienteResp.fotoPerfil?.urlImagen ?? foto,
           AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
           AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
+          rol: clienteResp.rol ?? "CLIENTE",           // 👈 AÑADIR
         })
       );
 
       toast.success("Usuario registrado con éxito", { position: "bottom-center" });
-      navigate("/Inicio");
+
+      // Redirección opcional por rol:
+      const destino =
+        (clienteResp.rol ?? "CLIENTE") === "SUPERADMIN" || (clienteResp.rol ?? "CLIENTE") === "EMPLEADO"
+          ? "/Welcome"
+          : "/Inicio";
+      navigate(destino);
+
     } catch (error) {
       console.error("Error logueándose con Google", error);
       toast.error("No se pudo continuar con Google");
@@ -160,11 +168,19 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                     photoURL: photoURLSafe,
                     AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
                     AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
+                    rol: clienteResp.rol ?? "CLIENTE",           // 👈 AÑADIR
                   })
                 );
 
                 toast.success("Usuario registrado con éxito", { position: "bottom-center" });
-                navigate("/Inicio");
+
+                // Redirección opcional por rol:
+                const destino =
+                  (clienteResp.rol ?? "CLIENTE") === "SUPERADMIN" || (clienteResp.rol ?? "CLIENTE") === "EMPLEADO"
+                    ? "/Welcome"
+                    : "/Inicio";
+                navigate(destino);
+
               } catch (error: any) {
                 if (error?.code === "auth/email-already-in-use") {
                   setFieldError("email", "El correo ya está registrado");

@@ -26,16 +26,22 @@ import { setUser } from "../../reducer/user/userSlice";
 import type { ClienteDTO } from "../../types/entities/cliente/ClienteDTO";
 import type { ClienteResponseDTO } from "../../types/entities/cliente/ClienteResponseDTO";
 
-
-import { ensureClienteConId } from "../../helpers/ensureClienteConId";
+// Servicio unificado (cliente/empleado)
+import { ensureUsuarioConIdLogin } from "../../helpers/ensureClienteConId";
 
 interface LoginModalProps {
   onClose: () => void;
 }
 
 const schema = yup.object().shape({
-  email: yup.string().required("El Correo es requerido").email("El email no tiene un formato válido"),
-  password: yup.string().required("La contraseña es requerida").min(6, "La contraseña debe tener al menos 6 caracteres"),
+  email: yup
+    .string()
+    .required("El Correo es requerido")
+    .email("El email no tiene un formato válido"),
+  password: yup
+    .string()
+    .required("La contraseña es requerida")
+    .min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
 export const LoginModal = ({ onClose }: LoginModalProps) => {
@@ -47,7 +53,47 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  // Login con Google (guarda id + uid en Redux)
+  /** Redirección por rol */
+  const redirigirPorRol = (rol?: string) => {
+    const destino =
+      rol === "SUPERADMIN" || rol === "EMPLEADO" ? "/Welcome" : "/Inicio";
+    navigate(destino);
+  };
+
+  /** Guardar en Redux normalizando campos */
+  const setUserFromResponse = async (
+    resp: ClienteResponseDTO,
+    fallback: {
+      nombre: string;
+      email: string;
+      foto?: string | null;
+      token: string;
+      emailVerified: boolean;
+    }
+  ) => {
+    const photoURLSafe =
+      (resp.fotoPerfil?.urlImagen && resp.fotoPerfil.urlImagen.trim()) ||
+      (fallback.foto && fallback.foto.trim()) ||
+      undefined;
+
+    dispatch(
+      setUser({
+        id: resp.id,
+        uid: resp.uid,
+        fullname: resp.nombreCompleto ?? fallback.nombre,
+        email: resp.correoElectronico ?? fallback.email,
+        token: fallback.token,
+        photoURL: photoURLSafe,
+        AuthenticatedEmail: resp.correoVerificado ?? fallback.emailVerified,
+        AuthenticatedDocs: resp.documentoVerificado ?? false,
+        rol: resp.rol ?? "CLIENTE",
+      })
+    );
+
+    redirigirPorRol(resp.rol ?? "CLIENTE");
+  };
+
+  // Login con Google (unificado cliente/empleado)
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
@@ -69,33 +115,20 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
 
       let resp: ClienteResponseDTO;
       try {
-        resp = await ensureClienteConId(dto);
+        resp = await ensureUsuarioConIdLogin(dto);
       } catch (e) {
-        console.warn("[google login] No se pudo asegurar/obtener id del cliente:", e);
+        console.warn("[google login] No se pudo asegurar/obtener id del usuario:", e);
         toast.error("No se pudo sincronizar con el backend");
-        return; // si querés igual continuar sin id, podés quitar este return
+        return;
       }
 
-      dispatch(
-        setUser({
-          id: resp.id,                                   // 👈 id desde el backend
-          uid: resp.uid,                                 // 👈 uid desde el backend
-          fullname: resp.nombreCompleto ?? nombre,
-          email: resp.correoElectronico ?? email,
-          token,
-          photoURL: resp.fotoPerfil?.urlImagen ?? foto,
-          AuthenticatedEmail: resp.correoVerificado ?? emailVerified,
-          AuthenticatedDocs: resp.documentoVerificado ?? false,
-          rol: resp.rol ?? "CLIENTE"
-        })
-      );
-
-      const destino =
-        resp.rol === 'SUPERADMIN' || resp.rol === 'EMPLEADO'
-          ? '/Welcome'
-          : '/Inicio'
-
-      navigate(destino)
+      await setUserFromResponse(resp, {
+        nombre,
+        email,
+        foto,
+        token,
+        emailVerified,
+      });
     } catch (error) {
       console.error("Error signing in with Google", error);
       toast.error("No se pudo iniciar sesión con Google");
@@ -131,13 +164,16 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
                 );
 
                 const uid = result.user.uid;
-                const nombre = result.user.displayName || values.email.split("@")[0] || "Usuario";
+                const nombre =
+                  result.user.displayName ||
+                  values.email.split("@")[0] ||
+                  "Usuario";
                 const email = result.user.email || values.email;
                 const foto = result.user.photoURL || "";
                 const token = await result.user.getIdToken();
                 const emailVerified = result.user.emailVerified;
 
-                // 2) Back: asegurar y obtener id
+                // 2) Back: asegurar/obtener usuario (cliente o empleado)
                 const dto: ClienteDTO = {
                   uid,
                   nombreCompleto: nombre,
@@ -147,50 +183,35 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
 
                 let resp: ClienteResponseDTO;
                 try {
-                  resp = await ensureClienteConId(dto);
+                  resp = await ensureUsuarioConIdLogin(dto);
                 } catch (e) {
-                  console.warn("[login] No se pudo asegurar/obtener id del cliente:", e);
+                  console.warn("[login] No se pudo asegurar/obtener id del usuario:", e);
                   toast.error("No se pudo sincronizar con el backend");
-                  return; // si querés igual continuar sin id, podés quitar este return
+                  return;
                 }
 
-                // 3) Guardar en Redux con id + uid
-
-                const photoURLSafe =
-                  (resp.fotoPerfil?.urlImagen && resp.fotoPerfil.urlImagen.trim()) ||
-                  (foto && foto.trim()) ||
-                  undefined;
-
-
-                dispatch(
-                  setUser({
-                    id: resp.id,
-                    uid: resp.uid,
-                    fullname: resp.nombreCompleto ?? nombre,
-                    email: resp.correoElectronico ?? email,
-                    token,
-                    photoURL: photoURLSafe,
-                    AuthenticatedEmail: resp.correoVerificado ?? emailVerified,
-                    AuthenticatedDocs: resp.documentoVerificado ?? false,
-                    rol: resp.rol ?? "CLIENTE"
-                  })
-                );
-
-                const destino =
-                  resp.rol === 'SUPERADMIN' || resp.rol === 'EMPLEADO'
-                    ? '/Welcome'
-                    : '/Inicio'
-
-                navigate(destino)
-
+                // 3) Guardar en Redux y redirigir por rol
+                await setUserFromResponse(resp, {
+                  nombre,
+                  email,
+                  foto,
+                  token,
+                  emailVerified,
+                });
               } catch (error: any) {
                 const code = error?.code || "";
-                if (code === "auth/invalid-credential" || code === "auth/wrong-password") {
+                if (
+                  code === "auth/invalid-credential" ||
+                  code === "auth/wrong-password"
+                ) {
                   setFieldError("password", "Email o contraseña incorrectos");
                 } else if (code === "auth/user-not-found") {
                   setFieldError("email", "El usuario no existe");
                 } else if (code === "auth/too-many-requests") {
-                  setFieldError("password", "Demasiados intentos, intentá más tarde");
+                  setFieldError(
+                    "password",
+                    "Demasiados intentos, intentá más tarde"
+                  );
                 } else {
                   setFieldError("password", "No se pudo iniciar sesión");
                   console.error("Login error:", error);
@@ -203,26 +224,53 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
               <Form className="flex flex-col w-full gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="email">Correo</label>
-                  <Field type="email" name="email" id="email" placeholder="ejemplo@gmail.com" className="border-b-tertiary border-b-2 outline-0 bg-transparent" />
+                  <Field
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder="ejemplo@gmail.com"
+                    className="border-b-tertiary border-b-2 outline-0 bg-transparent"
+                    autoComplete="email"
+                  />
                   <ErrorMessage name="email">
                     {(msg) => <p className="text-red-500 text-xs mt-1">{msg}</p>}
                   </ErrorMessage>
                 </div>
                 <div className="flex flex-col gap-2">
                   <label htmlFor="password">Contraseña</label>
-                  <Field type="password" name="password" id="password" placeholder="Contraseña123" className="border-b-tertiary border-b-2 outline-0 bg-transparent" />
+                  <Field
+                    type="password"
+                    name="password"
+                    id="password"
+                    placeholder="Contraseña123"
+                    className="border-b-tertiary border-b-2 outline-0 bg-transparent"
+                    autoComplete="current-password"
+                  />
                   <ErrorMessage name="password">
                     {(msg) => <p className="text-red-500 text-xs mt-1">{msg}</p>}
                   </ErrorMessage>
                 </div>
                 <div className="mt-4 flex flex-col gap-4">
-                  <button type="submit" disabled={isSubmitting} className="h-10 rounded-lg w-full bg-secondary cursor-pointer text-lg transition-colors hover:bg-tertiary" >
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="h-10 rounded-lg w-full bg-secondary cursor-pointer text-lg transition-colors hover:bg-tertiary disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
                     {isSubmitting ? "CARGANDO..." : "CONTINUAR"}
                   </button>
-                  <button type="button" className="h-10 rounded-lg w-full bg-white text-black flex gap-2 justify-center cursor-pointer items-center text-xs" onClick={handleGoogleSignIn} >
+                  <button
+                    type="button"
+                    className="h-10 rounded-lg w-full bg-white text-black flex gap-2 justify-center cursor-pointer items-center text-xs"
+                    onClick={handleGoogleSignIn}
+                  >
                     <FcGoogle /> Sign in with Google
                   </button>
-                  <p onClick={() => setAbrirRegistro(true)} className="cursor-pointer text-center text-xs mt-2" > ¿No tenés cuenta? Registrate </p>
+                  <p
+                    onClick={() => setAbrirRegistro(true)}
+                    className="cursor-pointer text-center text-xs mt-2"
+                  >
+                    ¿No tenés cuenta? Registrate
+                  </p>
                 </div>
               </Form>
             )}
