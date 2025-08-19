@@ -1,0 +1,30 @@
+// Provincia.ts
+export const Provincia = {
+  BUENOS_AIRES: "BUENOS_AIRES",
+  CABA: "CABA",
+  CATAMARCA: "CATAMARCA",
+  CHACO: "CHACO",
+  CHUBUT: "CHUBUT",
+  CORDOBA: "CORDOBA",
+  CORRIENTES: "CORRIENTES",
+  ENTRE_RIOS: "ENTRE_RIOS",
+  FORMOSA: "FORMOSA",
+  JUJUY: "JUJUY",
+  LA_PAMPA: "LA_PAMPA",
+  LA_RIOJA: "LA_RIOJA",
+  MENDOZA: "MENDOZA",
+  MISIONES: "MISIONES",
+  NEUQUEN: "NEUQUEN",
+  RIO_NEGRO: "RIO_NEGRO",
+  SALTA: "SALTA",
+  SAN_JUAN: "SAN_JUAN",
+  SAN_LUIS: "SAN_LUIS",
+  SANTA_CRUZ: "SANTA_CRUZ",
+  SANTA_FE: "SANTA_FE",
+  SANTIAGO_DEL_ESTERO: "SANTIAGO_DEL_ESTERO",
+  TIERRA_DEL_FUEGO: "TIERRA_DEL_FUEGO",
+  TUCUMAN: "TUCUMAN",
+} as const;
+
+// Para tipar:
+export type Provincia = typeof Provincia[keyof typeof Provincia];
