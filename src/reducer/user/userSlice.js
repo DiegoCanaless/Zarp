@@ -51,5 +51,6 @@ export const { setUser, logout } = userSlice.actions
 
 export const selectUser = (state) => state.user
 export const selectUserRol = (state) => state.user?.rol || 'CLIENTE'
+export const selectIsAuthenticated = (state) => Boolean(state.user?.token);
 
 export default userSlice.reducer

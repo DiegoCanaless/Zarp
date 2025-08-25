@@ -56,7 +56,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
   /** Redirección por rol */
   const redirigirPorRol = (rol?: string) => {
     const destino =
-      rol === "SUPERADMIN" || rol === "EMPLEADO" ? "/Welcome" : "/Inicio";
+      rol === "SUPERADMIN" || rol === "EMPLEADO" ? "/WelcomeAdmin" : "/Inicio";
     navigate(destino);
   };
 
