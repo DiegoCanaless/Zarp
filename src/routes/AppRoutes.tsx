@@ -1,15 +1,16 @@
 
 import { Routes, Route } from 'react-router-dom';
-import Landing from '../pages/Landing';
-import Inicio from '../pages/Inicio';
-import MiPerfil from '../pages/MiPerfil'
-import UserVerificiacion from '../pages/UserVerificacion';
-import WelcomeAdmin from '../pages/WelcomeAdmin'
+import Landing from '../pages/Clientes/Landing';
+import Inicio from '../pages/Clientes/Inicio';
+import MiPerfil from '../pages/Clientes/MiPerfil'
+import UserVerificiacion from '../pages/Clientes/UserVerificacion';
+import WelcomeAdmin from '../pages/Administradores/WelcomeAdmin'
 import { Toaster } from 'react-hot-toast';
-import VerificacionesAdmin from '../pages/VerificacionesAdmin';
-import ErrorPage from "../pages/Error"
+import VerificacionesAdmin from '../pages/Administradores/VerificacionesAdmin';
+import ErrorPage from "../pages/Clientes/Error"
 import RequireRole from './Guards/RequireRole';
 import VerificarDocumentos from '../components/layout/VerificarDocumentos';
+import {Contactanos} from "../pages/Clientes/Contactanos"
 
 
 
@@ -28,6 +29,12 @@ export default function AppRoutes() {
         <Route path='/Inicio' element={
           <RequireRole allowed={["CLIENTE","PROPIETARIO"]} >
             <Inicio />
+          </RequireRole>
+          }
+        />
+        <Route path='/Contactanos' element={
+          <RequireRole allowed={["CLIENTE","PROPIETARIO"]} >
+            <Contactanos />
           </RequireRole>
           }
         />

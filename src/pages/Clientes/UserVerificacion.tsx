@@ -1,11 +1,11 @@
-import { UsuarioHeader } from '../components/layout/headers/UsuarioHeader';
-import { Footer } from '../components/layout/Footer';
+import { UsuarioHeader } from '../../components/layout/headers/UsuarioHeader';
+import { Footer } from '../../components/layout/Footer';
 import { FaRegImage } from "react-icons/fa6";
-import { ButtonSecondary } from '../components/ui/buttons/ButtonSecondary';
+import { ButtonSecondary } from '../../components/ui/buttons/ButtonSecondary';
 import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { uploadImageCloudinary } from '../helpers/cloudinary';
-import type { VerificacionClienteDTO } from '../types/entities/verificacionCliente/VerificacionClienteDTO';
+import { uploadImageCloudinary } from '../../helpers/cloudinary';
+import type { VerificacionClienteDTO } from '../../types/entities/verificacionCliente/VerificacionClienteDTO';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 

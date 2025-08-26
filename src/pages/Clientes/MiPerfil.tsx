@@ -1,10 +1,10 @@
 import toast from "react-hot-toast";
 
 // Componentes
-import { UsuarioHeader } from "../components/layout/headers/UsuarioHeader";
-import { Footer } from "../components/layout/Footer";
-import { ButtonSecondary } from "../components/ui/buttons/ButtonSecondary";
-import { ButtonTertiary } from "../components/ui/buttons/ButtonTertiary";
+import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader";
+import { Footer } from "../../components/layout/Footer";
+import { ButtonSecondary } from "../../components/ui/buttons/ButtonSecondary";
+import { ButtonTertiary } from "../../components/ui/buttons/ButtonTertiary";
 
 // Iconos
 import { MdPriorityHigh } from "react-icons/md";
@@ -14,15 +14,15 @@ import { AiOutlineClose } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { getAuth, sendEmailVerification, updateProfile, updatePassword, reload } from "firebase/auth";
 import { useEffect, useRef, useState } from "react";
-import { setUser } from "../reducer/user/userSlice";
+import { setUser } from "../../reducer/user/userSlice";
 import { Link } from "react-router-dom";
 
 // types
-import type { ClienteDTO } from "../types/entities/cliente/ClienteDTO";
-import { putCliente } from "../helpers/putCliente";
+import type { ClienteDTO } from "../../types/entities/cliente/ClienteDTO";
+import { putCliente } from "../../helpers/putCliente";
 
 // ✅ Nuevo helper de Cloudinary desacoplado
-import { uploadImageCloudinary } from "../helpers/cloudinary";
+import { uploadImageCloudinary } from "../../helpers/cloudinary";
 
 // Función opcional para cache-busting visual (por si acaso)
 const noCache = (url?: string | null) =>

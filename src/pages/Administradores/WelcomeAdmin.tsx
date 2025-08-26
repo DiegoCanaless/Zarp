@@ -1,8 +1,8 @@
 import { useSelector } from "react-redux";
-import { ButtonPrimary } from "../components/ui/buttons/ButtonPrimary";
-import { UsuarioHeader } from "../components/layout/headers/UsuarioHeader"
-import { Footer } from "../components/layout/Footer";
-import fotoDefault from "../assets/Imagenes/fotoPerfilDefault.jpg"
+import { ButtonPrimary } from "../../components/ui/buttons/ButtonPrimary";
+import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader"
+import { Footer } from "../../components/layout/Footer";
+import fotoDefault from "../../assets/Imagenes/fotoPerfilDefault.jpg"
 import { Link } from "react-router-dom";
 
 

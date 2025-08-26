@@ -1,16 +1,16 @@
 
-import { LandingHeader } from '../components/layout/headers/LandingHeader'
-import VideoMobile from '../assets/Videos/videoFondoCelular.mp4'
-import VideoDesktop from '../assets/Videos/videoFondoPC.mp4'
-import { ButtonPrimary } from '../components/ui/buttons/ButtonPrimary'
-import { CardPropiedadDestacada } from '../components/landing/CardPropiedadDestacada'
-import imagen1 from '../assets/Imagenes/PropiedadDestacada1.jpg'
-import imagen2 from '../assets/Imagenes/PropiedadDestacada2.jpg'
-import imagen3 from '../assets/Imagenes/PropiedadDestacada3.jpg'
-import testimonio1 from '../assets/Imagenes/TestimonioPropietario.jpg'
-import testimonio2 from '../assets/Imagenes/TestimonioUsuario.jpg'
+import { LandingHeader } from '../../components/layout/headers/LandingHeader'
+import VideoMobile from '../../assets/Videos/videoFondoCelular.mp4'
+import VideoDesktop from '../../assets/Videos/videoFondoPC.mp4'
+import { ButtonPrimary } from '../../components/ui/buttons/ButtonPrimary'
+import { CardPropiedadDestacada } from '../../components/landing/CardPropiedadDestacada'
+import imagen1 from '../../assets/Imagenes/PropiedadDestacada1.jpg'
+import imagen2 from '../../assets/Imagenes/PropiedadDestacada2.jpg'
+import imagen3 from '../../assets/Imagenes/PropiedadDestacada3.jpg'
+import testimonio1 from '../../assets/Imagenes/TestimonioPropietario.jpg'
+import testimonio2 from '../../assets/Imagenes/TestimonioUsuario.jpg'
 import { FaStar } from "react-icons/fa";
-import { Footer } from '../components/layout/Footer'
+import { Footer } from '../../components/layout/Footer'
 
 
 const Landing = () => {

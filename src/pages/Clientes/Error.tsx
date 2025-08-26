@@ -1,9 +1,9 @@
 import React from 'react'
-import { ButtonSecondary } from '../components/ui/buttons/ButtonSecondary'
+import { ButtonSecondary } from '../../components/ui/buttons/ButtonSecondary'
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { getRoleHome } from '../helpers/getRoleHome';
-import { selectIsAuthenticated, selectUserRol } from "../reducer/user/userSlice";
+import { getRoleHome } from '../../helpers/getRoleHome';
+import { selectIsAuthenticated, selectUserRol } from "../../reducer/user/userSlice";
 
 const Error = () => {
     const navigate = useNavigate();

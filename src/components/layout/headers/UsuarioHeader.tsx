@@ -46,7 +46,7 @@ export const UsuarioHeader = () => {
     const linksCliente = [
         { title: "Mi Perfil", url: "/Perfil", icon: <ImUser color="white" fontSize={25} className="cursor-pointer mr-5" /> },
         { title: "Catalogo", url: "/Inicio", icon: <MdAddHomeWork color="white" fontSize={25} className="cursor-pointer mr-5" /> },
-        { title: "Contactanos", url: "#", icon: <MdOutlineMail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+        { title: "Contactanos", url: "/Contactanos", icon: <MdOutlineMail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
         { title: "Cerrar Sesion", url: "/", icon: <MdLogout onClick={Logout} color="white" fontSize={25} className="cursor-pointer mr-5" /> }
     ];
     const linksAdmin = [
@@ -105,7 +105,7 @@ export const UsuarioHeader = () => {
                         <AiOutlineClose onClick={abrirNav} color="white" fontSize={30} className="cursor-pointer mb-5 mt-2" />
                         <hr className="w-full bg-white mb-5" />
                         <ul className="flex flex-col gap-8">
-                            {navLinks.map((link) => (
+                            {navLinks.map((link : any) => (
                                 <li key={link.title} className="flex items-center">
                                     <Link to={link.url} className="flex">
                                         {link.icon}
