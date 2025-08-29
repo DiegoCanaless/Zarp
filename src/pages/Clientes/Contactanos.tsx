@@ -33,11 +33,9 @@ export const Contactanos = () => {
                             const res = await emailjs.send(SERVICE_ID, TEMPLATE_ID, values, {
                                 publicKey: PUBLIC_KEY,
                             });
-                            console.log("Email enviado:", res.status, res.text);
                             toast.success("Mensaje Enviado")
                             resetForm();
                         } catch (err) {
-                            console.error("Error al enviar email:", err);
                             toast.error("No se pudo enviar el mensaje")
                         } finally {
                             setSubmitting(false);

@@ -1,8 +1,8 @@
 import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader"
 import { Footer } from "../../components/layout/Footer"
 import { useState } from "react"
-import DocumentosVerificacion from "../../components/layout/DocumentosVerificacion";
-import PropiedadesVerificacion from "../../components/layout/PropiedadesVerificacion"
+import DocumentosVerificacion from "../../components/layout/Administradores/DocumentosVerificacion";
+import PropiedadesVerificacion from "../../components/layout/Administradores/PropiedadesVerificacion"
 
 const VerificacionesAdmin = () => {
 

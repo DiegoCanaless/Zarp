@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MdArrowForward } from "react-icons/md";
-import { VerificacionClienteResponseDTO } from "../../types/entities/verificacionCliente/VerificacionClienteResponseDTO";
+import { VerificacionClienteResponseDTO } from "../../../types/entities/verificacionCliente/VerificacionClienteResponseDTO";
 import { Link } from "react-router-dom";
 
 const DocumentosVerificacion = () => {
@@ -40,7 +40,7 @@ const DocumentosVerificacion = () => {
         {verificaciones
         .filter((elemento) => elemento.activo === true)
         .map((elemento) => (
-          <Link to="/verificarDocumento" state={{ verificacion: elemento }} key={elemento.id} className="mb-5 w-full flex justify-between items-center h-12 rounded-lg text-white bg-tertiary">
+          <Link to="/VerificarDocumento" state={{ verificacion: elemento }} key={elemento.id} className="mb-5 w-full flex justify-between items-center h-12 rounded-lg text-white bg-tertiary">
             <p className="ml-10">Verificacion de: {elemento.cliente.nombreCompleto}</p>
             <MdArrowForward className="mr-10" size={22} />
           </Link>

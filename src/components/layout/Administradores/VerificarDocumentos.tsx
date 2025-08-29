@@ -1,10 +1,9 @@
-import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { VerificacionClienteResponseDTO } from "../../types/entities/verificacionCliente/VerificacionClienteResponseDTO";
-import { UsuarioHeader } from "./headers/UsuarioHeader";
-import { Footer } from "./Footer";
-import { ButtonPrimary } from "../ui/buttons/ButtonPrimary";
-import { ButtonSecondary } from "../ui/buttons/ButtonSecondary";
+import { VerificacionClienteResponseDTO } from "../../../types/entities/verificacionCliente/VerificacionClienteResponseDTO";
+import { UsuarioHeader } from "../headers/UsuarioHeader";
+import { Footer } from "../Footer";
+import { ButtonPrimary } from "../../ui/buttons/ButtonPrimary";
+import { ButtonSecondary } from "../../ui/buttons/ButtonSecondary";
 import toast from "react-hot-toast";
 
 const VerificarDocumentos = () => {

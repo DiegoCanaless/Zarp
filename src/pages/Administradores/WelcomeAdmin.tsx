@@ -33,7 +33,7 @@ const Welcome = () => {
                 </div>
 
                 {usuario.rol === "SUPERADMIN" ?(
-                    <ButtonPrimary text="Configuracion" className="w-100 font-medium" />
+                    <Link to="/configuracion"><ButtonPrimary text="Configuracion" className="w-100 font-medium cursor-pointer" /> </Link>
                 ): null}
 
             </div>

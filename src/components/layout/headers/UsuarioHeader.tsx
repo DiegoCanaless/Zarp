@@ -1,39 +1,38 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom";
 import logoZarp from '../../../assets/Logo/logoZarp.png'
 import { ImUser } from "react-icons/im";
 import { ButtonPrimary } from '../../ui/buttons/ButtonPrimary'
 import { useState, type JSX } from "react";
 
-//Icons
-
+// Icons
 import { AiOutlineClose } from "react-icons/ai";
 import { FaHouseChimney, FaXTwitter, FaInstagram } from "react-icons/fa6";
-import { MdEmail, MdAddHomeWork, MdOutlineMail, MdLogout, MdHolidayVillage, MdOutlineContactMail, MdListAlt, MdGroup, MdOutlineSettings   } from "react-icons/md";
+import { MdEmail, MdAddHomeWork, MdOutlineMail, MdLogout, MdHolidayVillage, MdOutlineContactMail, MdListAlt, MdGroup, MdOutlineSettings } from "react-icons/md";
 import { CiFacebook } from "react-icons/ci";
-
 
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectIsAuthenticated, selectUserRol } from '../../../reducer/user/userSlice';
 import { getRoleHome } from "../../../helpers/getRoleHome";
 
+type NavItem = {
+    title: string;
+    icon: JSX.Element;
+    url?: string;
+    onClick?: () => void;
+};
+
 export const UsuarioHeader = () => {
     const usuario = useSelector((state: any) => state.user);
 
-    // Logout
+    // Router/Redux
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const Logout = () => {
-        dispatch(logout()); // Ejecutar la acción de logout
-        navigate('/'); // Redirigir a la página principal o login
-    };
 
-    // AbrirModal
-    const [navOpen, setNavOpen] = useState<boolean>(false)
-    const abrirNav = () => {
-        setNavOpen(!navOpen);
-    }
+    // Nav lateral
+    const [navOpen, setNavOpen] = useState<boolean>(false);
+    const abrirNav = () => setNavOpen(v => !v);
 
-    // Volver a Home
+    // Go Home
     const isAuth = useSelector(selectIsAuthenticated);
     const role = useSelector(selectUserRol);
     const handleGoHome = () => {
@@ -41,23 +40,29 @@ export const UsuarioHeader = () => {
         navigate(target, { replace: true });
     };
 
+    // Logout centralizado (cierra nav + navega)
+    const handleLogout = () => {
+        dispatch(logout());
+        setNavOpen(false);
+        navigate('/', { replace: true });
+    };
 
-    // Filtrado de Links segun usuario
-    const linksCliente = [
+    // Items por rol
+    const linksCliente: NavItem[] = [
         { title: "Mi Perfil", url: "/Perfil", icon: <ImUser color="white" fontSize={25} className="cursor-pointer mr-5" /> },
         { title: "Catalogo", url: "/Inicio", icon: <MdAddHomeWork color="white" fontSize={25} className="cursor-pointer mr-5" /> },
         { title: "Contactanos", url: "/Contactanos", icon: <MdOutlineMail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
-        { title: "Cerrar Sesion", url: "/", icon: <MdLogout onClick={Logout} color="white" fontSize={25} className="cursor-pointer mr-5" /> }
+        { title: "Cerrar Sesion", onClick: handleLogout, icon: <MdLogout color="white" fontSize={25} className="cursor-pointer mr-5" /> },
     ];
-    const linksAdmin = [
+
+    const linksAdmin: NavItem[] = [
         { title: "Verificaciones", url: "/VerificacionesAdmin", icon: <MdOutlineContactMail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
         { title: "Listas", url: "#", icon: <MdListAlt color="white" fontSize={25} className="cursor-pointer mr-5" /> },
-        { title: "Administradores", url: "#", icon: <MdGroup color="white" fontSize={25} className="cursor-pointer mr-5" /> }
-    ]
+        { title: "Administradores", url: "#", icon: <MdGroup color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+        { title: "Cerrar Sesion", onClick: handleLogout, icon: <MdLogout color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+    ];
 
-
-
-    const navbarLinksByRole: Record<string, { title: string; url: string; icon: JSX.Element }[]> = {
+    const navbarLinksByRole: Record<string, NavItem[]> = {
         CLIENTE: linksCliente,
         PROPIETARIO: [
             { title: "Mensajes", url: "#", icon: <MdEmail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
@@ -67,25 +72,18 @@ export const UsuarioHeader = () => {
         ],
         ADMIN: linksAdmin,
         SUPERADMIN: [
-            {title: "Configuracion", url: "#", icon: <MdOutlineSettings color="white" fontSize={25} className="cursor-pointer mr-5" />},
+            { title: "Configuracion", url: "/Configuracion", icon: <MdOutlineSettings color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             ...linksAdmin,
-            { title: "Cerrar Sesion", url: "/", icon: <MdLogout onClick={Logout} color="white" fontSize={25} className="cursor-pointer mr-5" /> }
-
         ]
     };
 
     const navLinks = navbarLinksByRole[role] || [];
 
-
-
-
-    // LinksRedes
     const redes = [
         { icon: <FaXTwitter fontSize={20} className="hover:text-secondary cursor-pointer" />, url: "#", title: "Twitter" },
         { icon: <FaInstagram fontSize={20} className="hover:text-secondary cursor-pointer" />, url: "#", title: "Instagram" },
-        { icon: <CiFacebook fontSize={20} className="hover:text-secondary cursor-pointer" />, url: "#", title: "Facebook" }
-    ]
-
+        { icon: <CiFacebook fontSize={20} className="hover:text-secondary cursor-pointer" />, url: "#", title: "Facebook" },
+    ];
 
     return (
         <>
@@ -101,32 +99,38 @@ export const UsuarioHeader = () => {
                 </div>
 
                 {navOpen && (
-                    <div className="absolute h-screen top-0 right-0 z-50 bg-primary text-white shadow-lg  p-4 w-60">
+                    <div className="absolute h-screen top-0 right-0 z-50 bg-primary text-white shadow-lg p-4 w-60">
                         <AiOutlineClose onClick={abrirNav} color="white" fontSize={30} className="cursor-pointer mb-5 mt-2" />
                         <hr className="w-full bg-white mb-5" />
                         <ul className="flex flex-col gap-8">
-                            {navLinks.map((link : any) => (
+                            {navLinks.map((link: any) => (
                                 <li key={link.title} className="flex items-center">
-                                    <Link to={link.url} className="flex">
-                                        {link.icon}
-                                        <p className="text-lg font-medium hover:text-secondary">{link.title}</p>
-                                    </Link>
+                                    {link.onClick ? (
+                                        <button type="button" onClick={link.onClick} className="cursor-pointer flex items-center w-full text-left" >
+                                            {link.icon}
+                                            <span className="text-lg font-medium hover:text-secondary">{link.title}</span>
+                                        </button>
+                                    ) : (
+                                        // Navegación normal
+                                        <Link to={link.url!} className="flex items-center" onClick={() => setNavOpen(false)} >
+                                            {link.icon}
+                                            <span className="text-lg font-medium hover:text-secondary">{link.title}</span>
+                                        </Link>
+                                    )}
                                 </li>
                             ))}
                         </ul>
+
                         <div className="flex justify-center items-center gap-4 mt-15">
-                            {redes.map((index, key) => (
-                                <Link to={index.url} key={index.title}>
-                                    {index.icon}
+                            {redes.map((redes) => (
+                                <Link to={redes.url} key={redes.title}>
+                                    {redes.icon}
                                 </Link>
                             ))}
                         </div>
                     </div>
                 )}
-
             </header>
         </>
-    )
-}
-
-
+    );
+};
