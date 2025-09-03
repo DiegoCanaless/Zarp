@@ -9,9 +9,10 @@ import { Toaster } from 'react-hot-toast';
 import VerificacionesAdmin from '../pages/Administradores/VerificacionesAdmin';
 import ErrorPage from "../pages/Clientes/Error"
 import RequireRole from './Guards/RequireRole';
-import VerificarDocumentos from '../components/layout/Administradores/VerificarDocumentos';
+import VerificarDocumentos from '../pages/Administradores/VerificarDocumentos';
 import {Contactanos} from "../pages/Clientes/Contactanos"
 import Configuracion from '../pages/Administradores/Configuracion';
+import VerificarPropiedad from '../pages/Administradores/VerificarPropiedad';
 
 
 
@@ -50,6 +51,7 @@ export default function AppRoutes() {
             <UserVerificiacion />
           </RequireRole>
           }
+
         />
         
 
@@ -80,6 +82,13 @@ export default function AppRoutes() {
         <Route path='/VerificarDocumento' element={
           <RequireRole allowed={["SUPERADMIN","ADMIN"]} >
             <VerificarDocumentos />
+          </RequireRole>
+          }
+        />
+
+        <Route path='/VerificarPropiedad' element={
+          <RequireRole allowed={["SUPERADMIN","ADMIN"]} >
+            <VerificarPropiedad />
           </RequireRole>
           }
         />
