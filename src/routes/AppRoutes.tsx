@@ -13,6 +13,8 @@ import VerificarDocumentos from '../pages/Administradores/VerificarDocumentos';
 import {Contactanos} from "../pages/Clientes/Contactanos"
 import Configuracion from '../pages/Administradores/Configuracion';
 import VerificarPropiedad from '../pages/Administradores/VerificarPropiedad';
+import Listas from '../pages/Administradores/Listas';
+import Empleados from '../pages/Administradores/Empleados';
 
 
 
@@ -66,36 +68,50 @@ export default function AppRoutes() {
         {/* Aca irian los SuperAdmin y Empleados */}
 
         <Route path='/WelcomeAdmin' element={
-          <RequireRole allowed={["SUPERADMIN","ADMIN"]} >
+          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
             <WelcomeAdmin />
           </RequireRole>
           }
         />
 
         <Route path='/VerificacionesAdmin' element={
-          <RequireRole allowed={["SUPERADMIN","ADMIN"]} >
+          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
             <VerificacionesAdmin />
           </RequireRole>
           }
         />
 
         <Route path='/VerificarDocumento' element={
-          <RequireRole allowed={["SUPERADMIN","ADMIN"]} >
+          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
             <VerificarDocumentos />
           </RequireRole>
           }
         />
 
         <Route path='/VerificarPropiedad' element={
-          <RequireRole allowed={["SUPERADMIN","ADMIN"]} >
+          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
             <VerificarPropiedad />
           </RequireRole>
           }
         />
 
         <Route path='/Configuracion' element={
-          <RequireRole allowed={["SUPERADMIN","ADMIN"]} >
+          <RequireRole allowed={["SUPERADMIN"]} >
             <Configuracion />
+          </RequireRole>
+          }
+        />
+
+        <Route path='/Listas' element={
+          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
+            <Listas/>
+          </RequireRole>
+          }
+        />
+
+        <Route path='/Empleados' element={
+          <RequireRole allowed={["SUPERADMIN"]} >
+            <Empleados/>
           </RequireRole>
           }
         />

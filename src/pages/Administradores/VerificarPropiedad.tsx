@@ -8,9 +8,14 @@ import { ButtonPrimary } from '../../components/ui/buttons/ButtonPrimary';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import toast from "react-hot-toast";
 import marker2x from 'leaflet/dist/images/marker-icon-2x.png';
 import marker from 'leaflet/dist/images/marker-icon.png';
 import shadow from 'leaflet/dist/images/marker-shadow.png';
+import { Contador } from '../../components/ui/Contador';
+import type { DetalleTipoPersonaResponseDTO } from '../../types/entities/detalleTipoPersona/DetalleTipoPersonaResponseDTO';
+import type { DetalleAmbienteResponseDTO } from '../../types/entities/detalleAmbiente/DetalleAmbienteResponseDTO';
+import type { DetalleCaracteristicaResponseDTO } from '../../types/entities/detalleCaracteristica/DetalleCaracteristicaResponseDTO';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
@@ -27,7 +32,48 @@ const VerificarPropiedad = () => {
 
     const position: [number, number] = [verificacion.direccion.latitud, verificacion.direccion.longitud]
 
-    console.log(verificacion)
+    let ubicacion = [
+        { opcion: "Calle", valor: verificacion.direccion.calle },
+        { opcion: "Numero", valor: verificacion.direccion.numero },
+        { opcion: "Departamento", valor: verificacion.direccion.departamento },
+        { opcion: "Codigo Postal", valor: verificacion.direccion.codigoPostal }
+    ]
+
+
+    const handleValido = async () => {
+        try {
+            const res = await fetch(
+                `http://localhost:8080/api/propiedades/activar/${verificacion.id}?activar=true`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            toast.success("Cliente verificado correctamente", { duration: 2500 });
+            navigate(-1);
+        } catch (e) {
+            toast.error("Surgió un error al verificar cliente", { duration: 2500 });
+
+        }
+    };
+
+    const handleInvalido = async () => {
+        try {
+            const res = await fetch(
+                `http://localhost:8080/api/propiedades/activar/${verificacion.id}?activar=false`, 
+                { 
+                    method: "PUT", 
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            toast.success("Cliente marcado como NO verificado", { duration: 2500 });
+            navigate(-1);
+        } catch (e) {
+            toast.error("Surgió un error al NO verificar cliente", { duration: 2500 });
+        }
+    };
     return (
         <>
             <UsuarioHeader />
@@ -36,28 +82,21 @@ const VerificarPropiedad = () => {
                 <p className='ml-4 text-md mt-2'>{verificacion.descripcion}</p>
 
                 {/* Ubicacion */}
-
                 <div className='bg-tertiary rounded-lg flex flex-col w-full h-auto px-4 py-2 mt-5 mb-5'>
                     <h3 className='text-lg mb-2'>Ubicacion</h3>
-                    <div className='bg-[#F3FCF0] mt-2 w-90 m-auto px-4 py-1 rounded-md text-center'>
-                        <p className='text-black font-medium'>Calle: {verificacion.direccion.calle}</p>
-                    </div>
-                    <div className='bg-[#F3FCF0] mt-2 w-90 m-auto px-4 py-1 rounded-md text-center'>
-                        <p className='text-black font-medium'>Numero: {verificacion.direccion.numero}</p>
-                    </div>
-                    <div className='bg-[#F3FCF0] mt-2 w-90 m-auto px-4 py-1 rounded-md text-center'>
-                        <p className='text-black font-medium'>Departamento: {verificacion.direccion.departamento}</p>
-                    </div>
-                    <div className='bg-[#F3FCF0] mt-2 w-90 m-auto px-4 py-1 rounded-md text-center mb-4'>
-                        <p className='text-black font-medium'>Codigo Postal: {verificacion.direccion.codigoPostal}</p>
-                    </div>
 
-                    <div className="w-full flex justify-center rounded-md overflow-hidden mb-5" style={{ height: 200  }}>
+                    {ubicacion.map((item: any) => (
+                        <div key={item.opcion} className='bg-[#F3FCF0] mt-2 w-90 m-auto px-4 py-1 rounded-md text-center'>
+                            <p className='text-black font-medium'>{item.opcion} : {item.valor}</p>
+                        </div>
+                    ))}
+
+                    <div className="z-10 mt-5 w-full flex justify-center rounded-md overflow-hidden mb-5" style={{ height: 200 }}>
                         <MapContainer
                             center={position}
                             zoom={20}
                             scrollWheelZoom={false}
-                            style={{ width: '350px', height: '200px' }}   // <-- prop correcto
+                            style={{ width: '350px', height: '200px' }}
                             className="rounded-md m-auto"
                         >
                             <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -68,16 +107,57 @@ const VerificarPropiedad = () => {
                     </div>
                 </div>
 
-                {/*  */}
-
+                {/* Capacidad */}
                 <div className='bg-tertiary rounded-lg flex flex-col w-full h-auto px-4 py-2 mt-5 mb-5'>
+                    <h3 className='text-lg mb-2'>Capacidad</h3>
 
-
+                    {verificacion.detalleTipoPersonas.map((item: DetalleTipoPersonaResponseDTO) => (
+                        <Contador key={item.tipoPersona.id} text={item.tipoPersona.denominacion} numero={item.cantidad}></Contador>
+                    ))}
                 </div>
 
-                <div className="flex justify-center gap-5 pb-10">
-                    <ButtonPrimary className="cursor-pointer" maxWidth="w-[200px]" text="Insuficiente" fontWeight="font-medium" color="text-white" bgColor="bg-red-600" />
-                    <ButtonSecondary className="cursor-pointer" maxWidth="w-[200px]" text="Valido" fontWeight="font-medium" />
+                {/* Capacidad */}
+                <div className='bg-tertiary rounded-lg flex flex-col w-full h-auto px-4 py-2 mt-5 mb-5'>
+                    <h3 className='text-lg mb-2'>Ambientes</h3>
+                    {verificacion.detalleAmbientes.map((item: DetalleAmbienteResponseDTO) => (
+                        <Contador key={item.id} text={item.ambiente.denominacion} numero={item.cantidad}></Contador>
+                    ))}
+                </div>
+
+                {/* Caracteristicas */}
+                <div className='bg-tertiary rounded-lg flex flex-col w-full h-auto px-4 py-2 mt-5 mb-5'>
+                    <h3 className='text-lg mb-2'>Caracteristicas</h3>
+                    {verificacion.detalleCaracteristicas.map((item: DetalleCaracteristicaResponseDTO) => (
+                        <div key={item.id} className='mb-5 flex justify-center gap-5 items-center bg-[#F3FCF0] py-3 w-50 m-auto rounded-lg px-5'>
+                            <img src={item.caracteristica.imagen.urlImagen} alt="" className='w-8' />
+                            <p className='text-lg text-black'>{item.caracteristica.denominacion}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Precio */}
+
+                <div className='bg-tertiary rounded-lg flex flex-col w-full h-auto px-4 py-2 mt-5 mb-5'>
+                    <h3 className='text-lg mb-2'>Precio</h3>
+                    <div className='bg-[#F3FCF0] mt-2 w-90 mb-5 m-auto px-4 py-1 rounded-md text-center'>
+                        <p className='text-black font-medium'>{verificacion.precioPorNoche}</p>
+                    </div>
+                </div>
+
+
+                {/* Imagenes */}
+                <div className='bg-tertiary rounded-lg flex flex-col w-full h-auto px-4 py-2 mt-5 mb-5'>
+                    <h3 className='text-lg mb-2'>Precio</h3>
+                    <img src={verificacion.detalleImagenes[0].imagen.urlImagen} alt="" className='mb-5 m-auto rounded-sm w-100 h-40 object-cover' />
+                    {/* <div className='flex items-center justify-around px-2'>
+                        
+                    </div> */}
+                </div>
+
+
+                <div className="flex justify-center gap-5 pb-10 mt-5">
+                    <ButtonPrimary onClick={handleInvalido} className="cursor-pointer" maxWidth="w-[200px]" text="Insuficiente" fontWeight="font-medium" color="text-white" bgColor="bg-red-600" />
+                    <ButtonSecondary onClick={handleValido} className="cursor-pointer" maxWidth="w-[200px]" text="Valido" fontWeight="font-medium" />
                 </div>
             </div>
 

@@ -26,7 +26,6 @@ const VerificarDocumentos = () => {
             toast.success("Cliente verificado correctamente", { duration: 2500 });
             navigate(-1);
         } catch (e) {
-            console.error(e);
             toast.error("Surgió un error al verificar cliente", { duration: 2500 });
             
         }
@@ -42,7 +41,6 @@ const VerificarDocumentos = () => {
             toast.success("Cliente marcado como NO verificado", { duration: 2500 });
             navigate(-1);
         } catch (e) {
-            console.error(e);
             toast.error("Surgió un error al NO verificar cliente", { duration: 2500 });
         }
     };

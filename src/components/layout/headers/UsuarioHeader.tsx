@@ -57,8 +57,7 @@ export const UsuarioHeader = () => {
 
     const linksAdmin: NavItem[] = [
         { title: "Verificaciones", url: "/VerificacionesAdmin", icon: <MdOutlineContactMail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
-        { title: "Listas", url: "#", icon: <MdListAlt color="white" fontSize={25} className="cursor-pointer mr-5" /> },
-        { title: "Administradores", url: "#", icon: <MdGroup color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+        { title: "Listas", url: "/Listas", icon: <MdListAlt color="white" fontSize={25} className="cursor-pointer mr-5" /> },
         { title: "Cerrar Sesion", onClick: handleLogout, icon: <MdLogout color="white" fontSize={25} className="cursor-pointer mr-5" /> },
     ];
 
@@ -70,9 +69,10 @@ export const UsuarioHeader = () => {
             { title: "Mis Propiedades", url: "#", icon: <MdHolidayVillage color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             ...linksCliente,
         ],
-        ADMIN: linksAdmin,
+        EMPLEADO: linksAdmin,
         SUPERADMIN: [
             { title: "Configuracion", url: "/Configuracion", icon: <MdOutlineSettings color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+            { title: "Administradores", url: "#", icon: <MdGroup color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             ...linksAdmin,
         ]
     };

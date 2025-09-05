@@ -12,7 +12,6 @@ const Configuracion = () => {
     let [OpcionElegida, setOpcionElegida] = useState<string>("Caracteristicas")
 
     const elegirOpcionPrincipal = (opcion: string) => {
-        console.log("Opción elegida:", opcion)
         setOpcionElegida(opcion)
     }
 
