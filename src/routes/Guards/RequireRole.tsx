@@ -6,14 +6,14 @@ import { selectUserRol, selectIsAuthenticated } from "../../reducer/user/userSli
 
 type Props = {
     children: ReactNode;
-    allowed: string[];              // p.ej. ["SUPERADMIN","EMPLEADO"]
-    redirectIfNotAuth?: string;     // p.ej. "/"
-    redirectIfNotAllowed?: string;  // p.ej. "/un 
+    allowed: string[]; 
+    redirectIfNotAuth?: string;
+    redirectIfNotAllowed?: string;
 }
 
 const roleHome: Record<string, string> = {
     SUPERADMIN: "/WelcomeAdmin",
-    ADMIN: "/WelcomeAdmin",  // si lo usás
+    EMPLEADO: "/WelcomeAdmin",  // si lo usás
     PROPIETARIO: "/Inicio",
     CLIENTE: "/Inicio",
 };

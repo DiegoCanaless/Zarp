@@ -27,6 +27,7 @@ import type { ClienteDTO } from "../../types/entities/cliente/ClienteDTO";
 
 // Helper (usa /existe-uid y /save del backend que ya tenés)
 import { ensureClienteStrict } from "../../helpers/clientes";
+import { fetchPropiedadesByCliente } from "../../helpers/propiedades";
 
 interface RegisterModalProps {
   onClose: () => void;
@@ -158,6 +159,17 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                   (foto && foto.trim()) ||
                   undefined;
 
+
+                let propiedades: any[] = [];
+                if (clienteResp.id != null) {
+                  try {
+                    propiedades = await fetchPropiedadesByCliente(clienteResp.id, token);
+                  } catch (e) {
+                    console.warn("No se pudieron traer las propiedades del usuario:", e);
+                    propiedades = [];
+                  }
+                }
+
                 dispatch(
                   setUser({
                     id: clienteResp.id ?? null,
@@ -168,7 +180,8 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                     photoURL: photoURLSafe,
                     AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
                     AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
-                    rol: clienteResp.rol ?? "CLIENTE",           // 👈 AÑADIR
+                    rol: clienteResp.rol ?? "CLIENTE",
+                    propiedades,
                   })
                 );
 

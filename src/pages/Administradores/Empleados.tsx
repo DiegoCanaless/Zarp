@@ -38,7 +38,7 @@ const Empleados = () => {
                 )
             );
         } catch (err) {
-            alert("No se pudo actualizar el empleado.");
+            toast.error("Error al activar/desactivar empleado", { duration: 2500 });
         }
     };
 
@@ -55,7 +55,9 @@ const Empleados = () => {
             );
             const data: EmpleadoResponseDTO[] = await res.json();
             console.log("Empleados:", data);
-            setEmpleados(data);
+            const soloEmpleados = data.filter(emp => emp.rol === "EMPLEADO");
+
+            setEmpleados(soloEmpleados);
             setLoading(false)
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
         } catch (e) {
@@ -81,7 +83,7 @@ const Empleados = () => {
 
                 <div className="flex justify-center gap-5 px-2">
                     <input value={busqueda} type="search" onChange={handleSearchChange} placeholder="Buscar..." className="outline-none px-5 w-140 bg-buttonSecondary rounded-lg" />
-                    <ButtonSecondary text="Crear Empleado" fontWeight="font-medium" maxWidth="w-30" onClick={abrirModal} />
+                    <ButtonSecondary className="cursor-pointer" text="Crear Empleado" fontWeight="font-medium" maxWidth="w-30" onClick={abrirModal} />
                 </div>
 
                 {loading && <p className="text-center mt-10 text-white">Cargando...</p>}
@@ -97,7 +99,7 @@ const Empleados = () => {
                             <h3 className="text-lg font-semibold">{elemento.nombreCompleto}</h3>
                             <p className="text-sm text-gray-300">{elemento.correoElectronico}</p>
                             <ButtonSecondary
-                                className={"self-end mt-3 text-white"}
+                                className={"self-end mt-3 text-white cursor-pointer"}
                                 maxWidth="w-[100px]"
                                 fontWeight="font-medium"
                                 bgColor={elemento.activo ? "bg-red-700" : "bg-green-600"}

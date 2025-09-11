@@ -16,6 +16,7 @@ import { Contador } from '../../components/ui/Contador';
 import type { DetalleTipoPersonaResponseDTO } from '../../types/entities/detalleTipoPersona/DetalleTipoPersonaResponseDTO';
 import type { DetalleAmbienteResponseDTO } from '../../types/entities/detalleAmbiente/DetalleAmbienteResponseDTO';
 import type { DetalleCaracteristicaResponseDTO } from '../../types/entities/detalleCaracteristica/DetalleCaracteristicaResponseDTO';
+import type { DetalleImagenResponseDTO } from '../../types/entities/detalleImagen/DetalleImagenResponseDTO';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
@@ -61,9 +62,9 @@ const VerificarPropiedad = () => {
     const handleInvalido = async () => {
         try {
             const res = await fetch(
-                `http://localhost:8080/api/propiedades/activar/${verificacion.id}?activar=false`, 
-                { 
-                    method: "PUT", 
+                `http://localhost:8080/api/propiedades/activar/${verificacion.id}?activar=false`,
+                {
+                    method: "PUT",
                     headers: { "Content-Type": "application/json" },
                 }
             );
@@ -147,11 +148,13 @@ const VerificarPropiedad = () => {
 
                 {/* Imagenes */}
                 <div className='bg-tertiary rounded-lg flex flex-col w-full h-auto px-4 py-2 mt-5 mb-5'>
-                    <h3 className='text-lg mb-2'>Precio</h3>
-                    <img src={verificacion.detalleImagenes[0].imagen.urlImagen} alt="" className='mb-5 m-auto rounded-sm w-100 h-40 object-cover' />
-                    {/* <div className='flex items-center justify-around px-2'>
-                        
-                    </div> */}
+                    <h3 className='text-lg mb-2'>Imagenes</h3>
+                    <img src={verificacion.detalleImagenes.find(item => item.imgPrincipal)?.imagen.urlImagen} alt="" className='mb-5 m-auto rounded-sm w-130 h-50 object-cover' />
+                    <div className='flex items-center justify-around px-2'>
+                            {verificacion.detalleImagenes.filter(item => !item.imgPrincipal).map((item: DetalleImagenResponseDTO) => (
+                            <img key={item.id} src={item.imagen.urlImagen} alt={`Imagen de la propiedad ${item.id}`} className='w-60 rounded mb-2'></img>
+                        ))}
+                    </div>
                 </div>
 
 

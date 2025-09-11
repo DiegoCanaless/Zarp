@@ -1,12 +1,9 @@
-
+// src/config/firebase.ts
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
+// ⚠️ El analytics no es necesario en la mayoría de proyectos web, lo podés sacar si no lo usás
 
-
-
-
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: import.meta.env.VITE_APIKEY,
   authDomain: import.meta.env.VITE_AUTHDOMAIN,
   projectId: import.meta.env.VITE_PROJECTID,
@@ -16,8 +13,8 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_MEASUREMENTID,
 };
 
-// Initialize Firebase
+// App principal
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
+// Exportá auth principal
 export const auth = getAuth(app);

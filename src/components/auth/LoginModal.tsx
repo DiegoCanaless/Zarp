@@ -21,6 +21,7 @@ import * as yup from "yup";
 // Redux
 import { useDispatch } from "react-redux";
 import { setUser } from "../../reducer/user/userSlice";
+import { fetchPropiedadesByCliente } from "../../helpers/propiedades";
 
 // Tipos
 import type { ClienteDTO } from "../../types/entities/cliente/ClienteDTO";
@@ -75,6 +76,15 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
       (resp.fotoPerfil?.urlImagen && resp.fotoPerfil.urlImagen.trim()) ||
       (fallback.foto && fallback.foto.trim()) ||
       undefined;
+    let propiedades: any[] = [];
+    if (resp.id != null) {
+      try {
+        propiedades = await fetchPropiedadesByCliente(resp.id, fallback.token);
+      } catch (e) {
+        console.warn("No se pudieron traer las propiedades del usuario:", e);
+        propiedades = [];
+      }
+    }
 
     dispatch(
       setUser({
@@ -87,6 +97,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
         AuthenticatedEmail: resp.correoVerificado ?? fallback.emailVerified,
         AuthenticatedDocs: resp.documentoVerificado ?? false,
         rol: resp.rol ?? "CLIENTE",
+        propiedades,
       })
     );
 

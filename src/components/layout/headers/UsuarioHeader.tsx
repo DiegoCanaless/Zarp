@@ -13,6 +13,7 @@ import { CiFacebook } from "react-icons/ci";
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectIsAuthenticated, selectUserRol } from '../../../reducer/user/userSlice';
 import { getRoleHome } from "../../../helpers/getRoleHome";
+import toast from "react-hot-toast";
 
 type NavItem = {
     title: string;
@@ -85,6 +86,10 @@ export const UsuarioHeader = () => {
         { icon: <CiFacebook fontSize={20} className="hover:text-secondary cursor-pointer" />, url: "#", title: "Facebook" },
     ];
 
+    const alerta: any = () => {
+        toast.error("Tienes que verificar tu correo y identidad antes de convertirte en propeitario", { duration: 2500 });
+    }
+
     return (
         <>
             <header className='bg-primary h-15 w-full px-2 flex justify-between items-center fixed top-0 left-0 z-20 md:px-5'>
@@ -92,10 +97,14 @@ export const UsuarioHeader = () => {
 
                 <div className="flex gap-2 items-center md:px-5">
                     {usuario.rol === "CLIENTE" ? (
-                        <ButtonPrimary text="Convertirse en Propietario" maxWidth="max-w-[190px]" className="px-2" />
+                        <ButtonPrimary text="Convertirse en Propietario" maxWidth="max-w-[190px]" className="cursor-pointer px-2" onClick={alerta} />
+                    ) : usuario.rol === "PROPIETARIO" && usuario.propiedades.length === 0 ? (
+                        <Link to="/crearPropiedad">
+                            <ButtonPrimary text="Convertirse en Propietario" maxWidth="max-w-[190px]" className="cursor-pointer px-2"/>
+                        </Link>
                     ) : null}
 
-                    <ImUser onClick={abrirNav} color="white" fontSize={25} className="cursor-pointer" />
+                    <ImUser onClick={abrirNav} color="white" fontSize={25} className="cursor-pointer md:ml-5" />
                 </div>
 
                 {navOpen && (
@@ -111,7 +120,6 @@ export const UsuarioHeader = () => {
                                             <span className="text-lg font-medium hover:text-secondary">{link.title}</span>
                                         </button>
                                     ) : (
-                                        // Navegación normal
                                         <Link to={link.url!} className="flex items-center" onClick={() => setNavOpen(false)} >
                                             {link.icon}
                                             <span className="text-lg font-medium hover:text-secondary">{link.title}</span>

@@ -15,6 +15,7 @@ import Configuracion from '../pages/Administradores/Configuracion';
 import VerificarPropiedad from '../pages/Administradores/VerificarPropiedad';
 import Listas from '../pages/Administradores/Listas';
 import Empleados from '../pages/Administradores/Empleados';
+import CrearPropiedad from '../pages/Propietarios/CrearPropiedad';
 
 
 
@@ -53,19 +54,20 @@ export default function AppRoutes() {
             <UserVerificiacion />
           </RequireRole>
           }
-
         />
-        
-
-
-
-        
 
         {/* Pagina Propietarios  */}
 
+        <Route path='/crearPropiedad' element={
+          <RequireRole allowed={["PROPIETARIO"]} >
+            <CrearPropiedad />
+          </RequireRole>
+          }
+        />
 
 
-        {/* Aca irian los SuperAdmin y Empleados */}
+
+        {/* Paginas Empleados */}
 
         <Route path='/WelcomeAdmin' element={
           <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
@@ -95,16 +97,20 @@ export default function AppRoutes() {
           }
         />
 
-        <Route path='/Configuracion' element={
-          <RequireRole allowed={["SUPERADMIN"]} >
-            <Configuracion />
-          </RequireRole>
-          }
-        />
 
         <Route path='/Listas' element={
           <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
             <Listas/>
+          </RequireRole>
+          }
+        />
+
+
+        {/* Paginas exclusivas del SuperAdmin */}
+
+        <Route path='/Configuracion' element={
+          <RequireRole allowed={["SUPERADMIN"]} >
+            <Configuracion />
           </RequireRole>
           }
         />
@@ -115,7 +121,6 @@ export default function AppRoutes() {
           </RequireRole>
           }
         />
-
       </Routes>
 
       <Toaster position="bottom-right" />

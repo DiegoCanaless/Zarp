@@ -27,45 +27,56 @@ const UserVerificiacion = () => {
 
   const handleSubmit = async () => {
     try {
+      if (!fotoFrontal || !fotoDocumentoFrontal || !fotoDocumentoTrasero) {
+        toast.error("Debes adjuntar las 3 fotos (selfie, DNI frente y DNI dorso).");
+        return;
+      }
+
       const folder = `verificaciones/${usuario.id}`;
 
-      const urlSelfie = fotoFrontal
-        ? await uploadImageCloudinary(fotoFrontal, folder, `selfie_${usuario.id}_${Date.now()}`)
-        : "";
-
-      const urlDniFront = fotoDocumentoFrontal
-        ? await uploadImageCloudinary(fotoDocumentoFrontal, folder, `dni_front_${usuario.id}_${Date.now()}`)
-        : "";
-
-      const urlDniBack = fotoDocumentoTrasero
-        ? await uploadImageCloudinary(fotoDocumentoTrasero, folder, `dni_back_${usuario.id}_${Date.now()}`)
-        : "";
+      const urlSelfie = await uploadImageCloudinary(fotoFrontal, folder, `selfie_${usuario.id}_${Date.now()}`);
+      const urlDniFront = await uploadImageCloudinary(fotoDocumentoFrontal, folder, `dni_front_${usuario.id}_${Date.now()}`);
+      const urlDniBack = await uploadImageCloudinary(fotoDocumentoTrasero, folder, `dni_back_${usuario.id}_${Date.now()}`);
 
       const verificacion: VerificacionClienteDTO = {
         fotoFrontal: { urlImagen: urlSelfie },
         fotoDocumentoFrontal: { urlImagen: urlDniFront },
         fotoDocumentoTrasero: { urlImagen: urlDniBack },
-        clienteId: usuario.id,
+        clienteId: usuario.id, // asegurate que sea número, no string
       };
 
+      console.log("Voy a enviar:", verificacion);
 
       const response = await fetch(`http://localhost:8080/api/verificacionClientes/save`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
+          // Si usás auth en el backend, no olvides:
+          // "Authorization": `Bearer ${usuario.token}`,
         },
         body: JSON.stringify(verificacion)
-      })
+      });
 
-      toast.success("Subida de Documentos Completada. Aguarde a que un admin verifique su identidad");
+      if (!response.ok) {
+        let msg = "Error al enviar verificación.";
+        try {
+          const data = await response.json();
+          msg = data?.message || msg;
+        } catch {
+          const text = await response.text();
+          if (text) msg = text;
+        }
+        toast.error(msg);
+        return;
+      }
 
-      setTimeout(() => {
-        navigate('/Inicio')
-      }, 3000);
+      toast.success("Subida de Documentos completada. Aguarda la verificación.");
+      setTimeout(() => navigate('/Inicio'), 3000);
     } catch (error: any) {
       toast.error("Error al subir imágenes: " + (error?.message || "Desconocido"));
     }
   };
+
 
   return (
     <>
