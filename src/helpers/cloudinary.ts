@@ -28,7 +28,5 @@ export async function uploadImageCloudinary(
     if (!res.ok) {
         throw new Error(json?.error?.message || "Error al subir a Cloudinary");
     }
-
-    // secure_url es la URL https definitiva de la imagen
     return json.secure_url as string;
 }

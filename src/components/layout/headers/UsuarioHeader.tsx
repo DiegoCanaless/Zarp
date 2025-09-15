@@ -67,7 +67,7 @@ export const UsuarioHeader = () => {
         PROPIETARIO: [
             { title: "Mensajes", url: "#", icon: <MdEmail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             { title: "Reservas", url: "#", icon: <FaHouseChimney color="white" fontSize={25} className="cursor-pointer mr-5" /> },
-            { title: "Mis Propiedades", url: "#", icon: <MdHolidayVillage color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+            { title: "Mis Propiedades", url: "/misPropiedades", icon: <MdHolidayVillage color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             ...linksCliente,
         ],
         EMPLEADO: linksAdmin,

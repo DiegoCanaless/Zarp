@@ -16,6 +16,7 @@ import VerificarPropiedad from '../pages/Administradores/VerificarPropiedad';
 import Listas from '../pages/Administradores/Listas';
 import Empleados from '../pages/Administradores/Empleados';
 import CrearPropiedad from '../pages/Propietarios/CrearPropiedad';
+import MisPropiedades from '../pages/Propietarios/MisPropiedades';
 
 
 
@@ -61,6 +62,13 @@ export default function AppRoutes() {
         <Route path='/crearPropiedad' element={
           <RequireRole allowed={["PROPIETARIO"]} >
             <CrearPropiedad />
+          </RequireRole>
+          }
+        />
+
+        <Route path='/misPropiedades' element={
+          <RequireRole allowed={["PROPIETARIO"]} >
+            <MisPropiedades />
           </RequireRole>
           }
         />

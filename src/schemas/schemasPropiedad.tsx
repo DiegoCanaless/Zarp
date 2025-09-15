@@ -21,15 +21,14 @@ export const propiedadInitialValues = {
     detalleTipoPersonas: [] as { tipoPersonaId: number; cantidad: number }[],
     detalleCaracteristicas: [] as { caracteristicaID: number }[],
     detalleImagenes: [
-        {
-            imgPrincipal: true,
-            imagen: { urlImagen: "" }
-        },
+        { imgPrincipal: true, imagen: { urlImagen: "" } },
+        { imgPrincipal: false, imagen: { urlImagen: "" } },
+        { imgPrincipal: false, imagen: { urlImagen: "" } },
+        { imgPrincipal: false, imagen: { urlImagen: "" } },
     ],
     detalleAmbientes: [] as { ambienteId: number; cantidad: number }[],
 };
 
-// Schemas por paso
 export const Schema1 = Yup.object().shape({
     nombre: Yup.string().required('El nombre es obligatorio'),
     descripcion: Yup.string().required('La descripción es obligatoria'),
@@ -44,19 +43,18 @@ export const Schema2 = Yup.object().shape({
     direccion: Yup.object().shape({
         calle: Yup.string().required('La calle es obligatoria'),
         numero: Yup.string().required('El número es obligatorio'),
+        piso: Yup.string().required('El piso es obligatorio'),
+        departamento: Yup.string().required('El departamento es obligatorio'),
         localidad: Yup.string().required('La localidad es obligatoria'),
         provincia: Yup.mixed<Provincia>()
             .oneOf(provinciasEnumValues, 'Seleccioná una provincia válida')
             .required('La provincia es obligatoria'),
         codigoPostal: Yup.string().required('El código postal es obligatorio'),
-        latitud: Yup.number()
-            .notOneOf([0], 'Debes marcar la ubicación en el mapa')
-            .required('Debes marcar la ubicación en el mapa'),
-        longitud: Yup.number()
-            .notOneOf([0], 'Debes marcar la ubicación en el mapa')
-            .required('Debes marcar la ubicación en el mapa'),
+        latitud: Yup.number().notOneOf([0], 'Debes marcar la ubicación en el mapa').required(),
+        longitud: Yup.number().notOneOf([0], 'Debes marcar la ubicación en el mapa').required(),
     }),
 });
+
 
 export const Schema3 = Yup.object().shape({
     tipoPropiedadId: Yup.number()
@@ -103,11 +101,21 @@ export const Schema4 = Yup.object().shape({
         .of(
             Yup.object().shape({
                 imagen: Yup.object().shape({
-                    urlImagen: Yup.string().url('URL inválida').required('La URL de la imagen es obligatoria'),
+                    urlImagen: Yup.string().trim().url('URL inválida').nullable().default("").optional(),
                 }),
+                imgPrincipal: Yup.boolean().required(),
             })
         )
-        .min(1, 'Debe agregar al menos una imagen'),
+        .length(4, 'Deben ser exactamente 4 imágenes (slots)')
+        .test('one-principal', 'Debes elegir exactamente una imagen principal', (arr: any[]) => {
+            if (!arr) return false;
+            const count = arr.filter((x) => !!x?.imgPrincipal).length;
+            return count === 1;
+        })
+        .test('at-least-one-url', 'Debes subir al menos una imagen', (arr: any[]) => {
+            if (!arr) return false;
+            return arr.some((x) => !!x?.imagen?.urlImagen && x.imagen.urlImagen.trim() !== "");
+        }),
 });
 
 export const schemas = [Schema1, Schema2, Schema3, Schema4];
