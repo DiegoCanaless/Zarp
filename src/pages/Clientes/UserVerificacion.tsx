@@ -51,8 +51,6 @@ const UserVerificiacion = () => {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
-          // Si usás auth en el backend, no olvides:
-          // "Authorization": `Bearer ${usuario.token}`,
         },
         body: JSON.stringify(verificacion)
       });
@@ -81,7 +79,7 @@ const UserVerificiacion = () => {
   return (
     <>
       <UsuarioHeader />
-      <div className='h-screen w-full pt-20 bg-secondary flex flex-col items-center'>
+      <div className='min-h-screen w-full pt-20 bg-secondary flex flex-col items-center'>
         <h1 className="text-2xl text-center text-white md:mb-5">Verificar Documentación</h1>
 
         <section className='flex flex-col mt-5 text-white gap-10'>

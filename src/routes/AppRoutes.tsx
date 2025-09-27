@@ -17,6 +17,9 @@ import Listas from '../pages/Administradores/Listas';
 import Empleados from '../pages/Administradores/Empleados';
 import CrearPropiedad from '../pages/Propietarios/CrearPropiedad';
 import MisPropiedades from '../pages/Propietarios/MisPropiedades';
+import EditarPropiedad from '../pages/Propietarios/EditarPropiedad';
+import Propiedad from '../pages/Clientes/Propiedad';
+import ReservarPropiedad from '../pages/Propietarios/ReservarPropiedad';
 
 
 
@@ -57,6 +60,13 @@ export default function AppRoutes() {
           }
         />
 
+        <Route path="/Propiedad/:id" element={
+          <RequireRole allowed={["CLIENTE","PROPIETARIO"]}>
+            <Propiedad/>
+          </RequireRole>
+          }
+        />
+
         {/* Pagina Propietarios  */}
 
         <Route path='/crearPropiedad' element={
@@ -73,6 +83,20 @@ export default function AppRoutes() {
           }
         />
 
+        <Route path='/EditarPropiedad/:id' element={
+          <RequireRole allowed={["PROPIETARIO"]} >
+            <EditarPropiedad />
+          </RequireRole>
+          }
+        />
+
+
+        <Route path='/ReservarPropiedad/:id' element={
+          <RequireRole allowed={["PROPIETARIO"]} >
+            <ReservarPropiedad />
+          </RequireRole>
+          }
+        />
 
 
         {/* Paginas Empleados */}

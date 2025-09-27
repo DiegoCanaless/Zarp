@@ -162,7 +162,7 @@ const MiPerfil = () => {
 
       // Foto
       if (newPhotoUrl) {
-        await updateProfile(user, { photoURL: newPhotoUrl }).catch(() => {});
+        await updateProfile(user, { photoURL: newPhotoUrl }).catch(() => { });
         await reload(user);
       }
 
@@ -237,11 +237,10 @@ const MiPerfil = () => {
           <h1 className="text-4xl text-white md:mb-5">Mi Perfil</h1>
 
           <label
-            className={`relative group w-35 h-35 mt-2 md:w-50 md:h-50 ${
-              isPasswordUser && modoEdicion
-                ? "cursor-pointer"
-                : "cursor-default"
-            } block`}
+            className={`relative group w-35 h-35 mt-2 md:w-50 md:h-50 ${isPasswordUser && modoEdicion
+              ? "cursor-pointer"
+              : "cursor-default"
+              } block`}
             htmlFor={isPasswordUser && modoEdicion ? "imagenCambiar" : undefined}
           >
             {isPasswordUser && modoEdicion ? (
@@ -257,8 +256,8 @@ const MiPerfil = () => {
                     {saving
                       ? "Guardando..."
                       : pendingFile
-                      ? "Guardar para aplicar"
-                      : "Cambiar foto"}
+                        ? "Guardar para aplicar"
+                        : "Cambiar foto"}
                   </span>
                 </div>
               </>
@@ -390,39 +389,18 @@ const MiPerfil = () => {
         )}
 
         {!modoEdicion ? (
-          <ButtonSecondary
-            text="Editar Datos"
-            className="m-auto w-40"
-            bgColor="bg-white"
-            maxWidth="max-w-[240px]"
-            fontWeight="font-medium"
-            fontSize="text-md"
-            height="h-8"
-            onClick={() => setModoEdicion(true)}
-          />
+          <div className="flex flex-col justify-center items-center gap-4">
+            <ButtonSecondary text="Editar Datos" className="m-auto w-40" bgColor="bg-white" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" onClick={() => setModoEdicion(true)} />
+
+            {usuario.rol === "PROPIETARIO" && (
+              <ButtonSecondary text="Conectar Mercado Pago" className="m-auto w-60" bgColor="bg-[#00aae4]" color="text-white" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" onClick={() => setModoEdicion(true)} />
+            )}
+          </div>
+
         ) : (
           <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row sm:gap-10 ">
-            <ButtonSecondary
-              onClick={actualizarPerfil}
-              text={saving ? "Guardando..." : "Guardar Cambios"}
-              className="m-auto w-40"
-              color="text-white"
-              bgColor="bg-primary"
-              maxWidth="max-w-[240px]"
-              fontWeight="font-medium"
-              fontSize="text-md"
-              height="h-8"
-              disabled={saving}
-            />
-            <ButtonSecondary
-              text="Cancelar"
-              className="m-auto w-40"
-              color="text-white"
-              bgColor="bg-red-900"
-              maxWidth="max-w-[240px]"
-              fontWeight="font-medium"
-              fontSize="text-md"
-              height="h-8"
+            <ButtonSecondary onClick={actualizarPerfil} text={saving ? "Guardando..." : "Guardar Cambios"} className="m-auto w-40" color="text-white" bgColor="bg-primary" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" disabled={saving} />
+            <ButtonSecondary text="Cancelar" className="m-auto w-40" color="text-white" bgColor="bg-red-900" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8"
               onClick={() => {
                 setModoEdicion(false);
                 setNombre(usuario.fullname || "");

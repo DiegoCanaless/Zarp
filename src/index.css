@@ -35,3 +35,14 @@ html {
     scroll-behavior: smooth;
 
 }
+
+.no-clear-button::-webkit-search-decoration,
+.no-clear-button::-webkit-search-cancel-button,
+.no-clear-button::-webkit-search-results-button,
+.no-clear-button::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.no-clear-button {
+  -moz-appearance: textfield;
+}
