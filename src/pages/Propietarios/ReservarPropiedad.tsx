@@ -1,14 +1,12 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader";
 import { Footer } from "../../components/layout/Footer";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import type { PropiedadResponseDTO } from "../../types/entities/propiedad/PropiedadResponseDTO";
 import toast from "react-hot-toast";
 import { FormaPago } from "../../types/enums/FormaPago";
 import { useSelector } from "react-redux";
 import type { ReservaDTO } from "../../types/entities/reserva/ReservaDTO";
-import { ButtonSecondary } from "../../components/ui/buttons/ButtonSecondary";
-
 import { SiMercadopago } from "react-icons/si";
 import { FaPaypal } from "react-icons/fa";
 
@@ -21,26 +19,31 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 const toUTCDate = (d: Date) =>
     new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
 const formatARS = (n: number) =>
-    n.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
+    n.toLocaleString("es-AR", {
+        style: "currency",
+        currency: "ARS",
+        maximumFractionDigits: 0,
+    });
 
 const ReservarPropiedad = () => {
+
     const { id } = useParams<{ id: string }>();
     const [propiedad, setPropiedad] = useState<PropiedadResponseDTO>();
     const [formaPago, setFormaPago] = useState<FormaPago | null>(null);
+    const navigate = useNavigate();
 
     const usuario = useSelector((state: any) => state.user);
 
-    const [fechaDesde, setFechaDesde] = useState<Date>(new Date());
-    const [fechaHasta, setFechaHasta] = useState<Date>(() => {
-        const t = new Date();
-        t.setDate(t.getDate() + 1);
-        return t;
-    });
+    // ⬇️ sin fechas preseleccionadas
+    const [fechaDesde, setFechaDesde] = useState<Date | null>(null);
+    const [fechaHasta, setFechaHasta] = useState<Date | null>(null);
 
     useEffect(() => {
         const fetchPropiedad = async () => {
             try {
-                const res = await fetch(`http://localhost:8080/api/propiedades/getById/${id}`);
+                const res = await fetch(
+                    `http://localhost:8080/api/propiedades/getById/${id}`
+                );
                 if (!res.ok) throw new Error("Error al traer la propiedad");
                 const data: PropiedadResponseDTO = await res.json();
                 setPropiedad(data);
@@ -53,6 +56,7 @@ const ReservarPropiedad = () => {
 
     // noches (check-in exclusivo, check-out exclusivo)
     const noches = useMemo(() => {
+        if (!fechaDesde || !fechaHasta) return 0;
         const inicio = toUTCDate(fechaDesde);
         const fin = toUTCDate(fechaHasta);
         const diferencia = Math.round((+fin - +inicio) / MS_PER_DAY);
@@ -63,7 +67,16 @@ const ReservarPropiedad = () => {
     const total = noches * precioPorNoche;
 
     const reservacion: ReservaDTO | null = useMemo(() => {
-        if (!propiedad || !usuario?.id || !formaPago || noches <= 0) return null;
+        if (
+            !propiedad ||
+            !usuario?.id ||
+            !formaPago ||
+            !fechaDesde ||
+            !fechaHasta ||
+            noches <= 0
+        )
+            return null;
+
         return {
             fechaInicio: fechaDesde,
             fechaFin: fechaHasta,
@@ -72,108 +85,106 @@ const ReservarPropiedad = () => {
             propiedadId: propiedad.id,
             formaPago,
         };
-    }, [propiedad, usuario?.id, formaPago, fechaDesde, fechaHasta, noches, total]);
+    }, [
+        propiedad,
+        usuario?.id,
+        formaPago,
+        fechaDesde,
+        fechaHasta,
+        noches,
+        total,
+    ]);
 
     const minHasta = useMemo(() => {
+        if (!fechaDesde) return null;
         const next = new Date(fechaDesde);
         next.setDate(next.getDate() + 1);
         return next;
     }, [fechaDesde]);
 
-    const onChangeDesde = useCallback((date: Date | null) => {
-        if (!date) return;
-        setFechaDesde(date);
-        // asegurar que "hasta" > "desde"
-        const dUTC = toUTCDate(date);
-        const hUTC = toUTCDate(fechaHasta);
-        if (hUTC <= dUTC) {
-            const next = new Date(date);
-            next.setDate(next.getDate() + 1);
-            setFechaHasta(next);
-        }
-    }, [fechaHasta]);
+    const onChangeDesde = useCallback(
+        (date: Date | null) => {
+            if (!date) {
+                setFechaDesde(null);
+                setFechaHasta(null);
+                return;
+            }
+            setFechaDesde(date);
+            if (fechaHasta && toUTCDate(fechaHasta) <= toUTCDate(date)) {
+                setFechaHasta(null);
+            }
+        },
+        [fechaHasta]
+    );
 
     const confirmarReserva = async () => {
-        if (!reservacion) {
-            toast.error("Completá fechas válidas y método de pago.");
-            return;
+        try {
+            const res = await fetch(
+                "https://579f9e4aecb7.ngrok-free.app/api/mercadoPago/create-preference",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(reservacion),
+                }
+            );
+
+            if (!res.ok) {
+                const msg = await res.text().catch(() => "");
+                throw new Error(msg || `Error HTTP ${res.status}`);
+            }
+
+            const raw = await res.text();
+            let data: any = raw
+
+            try{
+                data = JSON.parse(raw)
+            } catch{
+
+            }
+
+            
+
+            // ✅ redirige al link de pago
+            window.location.href = raw;
+        } catch (err) {
+            console.error(err);
+            toast.error("No se pudo crear la preferencia.");
         }
-        // TODO: enviar reservacion al backend
-        // await axios.post("/api/reservas", reservacion);
-        toast.success("Reserva lista para enviar ✅");
     };
 
-    const canContinuar = Boolean(reservacion);
+
 
     return (
         <>
             <UsuarioHeader />
-            <main className="min-h-screen bg-secondary pt-24 sm:pt-36 text-white">
-                <div className="max-w-5xl mx-auto px-5 pb-20">
-                    {/* Título */}
+
+            {/* ====== CONTENIDO ====== */}
+            <main className="bg-secondary min-h-screen text-white pt-24 sm:pt-36">
+                <div className="mx-auto max-w-5xl px-4 sm:px-6 pb-16">
+                    {/* Título + precio */}
                     <header className="mb-6">
-                        <h1 className="text-2xl font-semibold tracking-tight">{propiedad?.nombre ?? "Propiedad"}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+                            {propiedad?.nombre ?? "Propiedad"}
+                        </h1>
                         <p className="text-sm opacity-80">
-                            {precioPorNoche > 0 ? `${formatARS(precioPorNoche)} por noche` : "Precio por noche no disponible"}
+                            {precioPorNoche > 0
+                                ? `${formatARS(precioPorNoche)} por noche`
+                                : "Precio por noche no disponible"}
                         </p>
                     </header>
 
-                    {/* Layout principal */}
-                    <div className="lg:grid lg:grid-cols-3 lg:gap-6">
-                        {/* Columna izquierda */}
+                    {/* GRID: izquierda (inputs) / derecha (resumen) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* ===== IZQUIERDA ===== */}
                         <section className="lg:col-span-2 space-y-6">
-                            {/* Método de pago */}
-                            <div className="bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-4 sm:p-5">
-                                <h3 className="text-lg font-medium mb-4">Método de pago</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        aria-pressed={formaPago === FormaPago.MERCADO_PAGO}
-                                        onClick={() => setFormaPago(FormaPago.MERCADO_PAGO)}
-                                        className={`w-full flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition
-                      ${formaPago === FormaPago.MERCADO_PAGO
-                                                ? "border-[#00aae4]/60 bg-[#00aae4]/10 ring-2 ring-[#00aae4]/40"
-                                                : "border-white/15 hover:border-white/30 bg-white/5"}`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="rounded-lg bg-white p-2">
-                                                <SiMercadopago size={26} color="#00aae4" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="font-medium">Mercado Pago</p>
-                                                <p className="text-xs opacity-70">Rápido y seguro</p>
-                                            </div>
-                                        </div>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        aria-pressed={formaPago === FormaPago.PAYPAL}
-                                        onClick={() => setFormaPago(FormaPago.PAYPAL)}
-                                        className={`w-full flex items-center justify-between gap-3 rounded-xl px-4 py-3 border transition
-                      ${formaPago === FormaPago.PAYPAL
-                                                ? "border-[#003087]/60 bg-[#003087]/10 ring-2 ring-[#003087]/40"
-                                                : "border-white/15 hover:border-white/30 bg-white/5"}`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="rounded-lg bg-white p-2">
-                                                <FaPaypal size={24} color="#003087" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="font-medium">PayPal</p>
-                                                <p className="text-xs opacity-70">Internacional</p>
-                                            </div>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-
                             {/* Fechas */}
-                            <div className="bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-4 sm:p-5">
-                                <h3 className="text-lg font-medium mb-4">Fechas</h3>
+                            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-5 sm:p-6">
+                                <h3 className="text-lg font-semibold mb-4">Fechas</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm mb-1 opacity-90">Desde</label>
+                                        <label className="block text-sm mb-1 opacity-90">
+                                            Desde
+                                        </label>
                                         <DatePicker
                                             selected={fechaDesde}
                                             onChange={onChangeDesde}
@@ -185,84 +196,129 @@ const ReservarPropiedad = () => {
                                             placeholderText="Elegí fecha desde"
                                             className="w-full rounded-lg bg-white px-3 py-2 text-black outline-none focus:ring-2 focus:ring-indigo-400"
                                             calendarClassName="!text-black"
+                                            isClearable
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm mb-1 opacity-90">Hasta</label>
+                                        <label className="block text-sm mb-1 opacity-90">
+                                            Hasta
+                                        </label>
                                         <DatePicker
                                             selected={fechaHasta}
-                                            onChange={(date) => date && setFechaHasta(date)}
+                                            onChange={(date) => setFechaHasta(date)}
                                             selectsEnd
                                             startDate={fechaDesde}
                                             endDate={fechaHasta}
-                                            minDate={minHasta}
+                                            minDate={minHasta ?? undefined}
                                             dateFormat="dd/MM/yyyy"
                                             placeholderText="Elegí fecha hasta"
-                                            className="w-full rounded-lg bg-white px-3 py-2 text-black outline-none focus:ring-2 focus:ring-indigo-400"
+                                            className="w-full rounded-lg bg-white px-3 py-2 text-black outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50"
                                             calendarClassName="!text-black"
+                                            disabled={!fechaDesde}
+                                            isClearable
                                         />
                                     </div>
                                 </div>
 
                                 {/* Hint de validación */}
                                 <p className="text-xs mt-3 opacity-80">
-                                    {noches > 0
-                                        ? `Has seleccionado ${noches} noche${noches === 1 ? "" : "s"}.`
-                                        : "Seleccioná al menos una noche (el check-out debe ser posterior al check-in)."}
+                                    {fechaDesde && fechaHasta
+                                        ? noches > 0
+                                            ? `Has seleccionado ${noches} noche${noches === 1 ? "" : "s"
+                                            }.`
+                                            : "El check-out debe ser posterior al check-in."
+                                        : "Seleccioná fechas para ver las noches totales."}
                                 </p>
+                            </div>
+
+                            {/* Método de pago (estilo tarjetas) */}
+                            <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-5 sm:p-6">
+                                <h3 className="text-lg font-semibold mb-4">Método de pago</h3>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        aria-pressed={formaPago === FormaPago.MERCADO_PAGO}
+                                        onClick={() => setFormaPago(FormaPago.MERCADO_PAGO)}
+                                        className={`group rounded-2xl border p-4 transition flex items-center gap-3 ${formaPago === FormaPago.MERCADO_PAGO
+                                            ? "border-[#009ee3]/60 bg-[#009ee3]/10 ring-2 ring-[#009ee3]/40"
+                                            : "border-white/10 bg-zinc-800/30 hover:bg-zinc-800/50"
+                                            }`}
+                                    >
+                                        <div className="rounded-xl bg-white p-2">
+                                            <SiMercadopago className="text-[#009ee3]" size={28} />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="font-medium">Mercado Pago</p>
+                                            <p className="text-sm text-zinc-400">
+                                                Tarjeta, débito o billetera
+                                            </p>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        aria-pressed={formaPago === FormaPago.PAYPAL}
+                                        onClick={() => setFormaPago(FormaPago.PAYPAL)}
+                                        className={`group rounded-2xl border p-4 transition flex items-center gap-3 ${formaPago === FormaPago.PAYPAL
+                                            ? "border-[#003087]/60 bg-[#003087]/10 ring-2 ring-[#003087]/40"
+                                            : "border-white/10 bg-zinc-800/30 hover:bg-zinc-800/50"
+                                            }`}
+                                    >
+                                        <div className="rounded-xl bg-white p-2">
+                                            <FaPaypal size={28} />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="font-medium">PayPal</p>
+                                            <p className="text-sm text-zinc-400">Pago internacional</p>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
                         </section>
 
-                        {/* Resumen (columna derecha) */}
-                        <aside className="mt-6 lg:mt-0 lg:col-span-1">
-                            <div className="sticky top-24 bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-4 sm:p-5">
-                                <h3 className="text-lg font-medium mb-4">Resumen</h3>
+                        {/* ===== DERECHA: RESUMEN ===== */}
+                        <aside className="lg:sticky lg:top-28 h-fit">
+                            <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-5 sm:p-6">
+                                <h3 className="text-lg font-semibold mb-4">Resumen de pago</h3>
 
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between opacity-90">
-                                        <span>Precio por noche</span>
-                                        <span className="font-medium">{formatARS(precioPorNoche)}</span>
-                                    </div>
-                                    <div className="flex justify-between opacity-90">
-                                        <span>Noches</span>
-                                        <span className="font-medium">{noches}</span>
-                                    </div>
-                                    <div className="border-t border-white/10 my-2" />
-                                    <div className="flex justify-between">
-                                        <span className="font-medium">Total</span>
-                                        <span className="text-lg font-semibold">{formatARS(total)}</span>
-                                    </div>
-                                    <div className="flex justify-between opacity-90">
-                                        <span>Pago</span>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-zinc-300">
+                                            {formatARS(precioPorNoche)} × {noches} noche(s)
+                                        </span>
                                         <span className="font-medium">
-                                            {formaPago ? (formaPago === FormaPago.MERCADO_PAGO ? "Mercado Pago" : "PayPal") : "—"}
+                                            {formatARS(precioPorNoche * (noches || 0))}
                                         </span>
                                     </div>
+
+                                    <div className="h-px bg-white/10 my-2" />
+
+                                    <div className="flex items-center justify-between text-base">
+                                        <span className="font-medium">Total</span>
+                                        <span className="font-semibold">{formatARS(total)}</span>
+                                    </div>
                                 </div>
 
-                                <div className="mt-5">
-                                    <ButtonSecondary
-                                        onClick={confirmarReserva}
-                                        disabled={!canContinuar}
-                                        className={`w-full px-5 transition-colors
-                      ${canContinuar ? "hover:bg-white hover:text-black" : "opacity-50 cursor-not-allowed"}
-                    `}
-                                        fontSize="text-md"
-                                        bgColor="bg-tertiary"
-                                        color="text-white"
-                                        text="Continuar"
-                                    />
-                                    {!canContinuar && (
-                                        <p className="text-xs mt-2 opacity-80">
-                                            Seleccioná método de pago y un rango de fechas válido.
-                                        </p>
-                                    )}
-                                </div>
+                                {/* Botón principal (mantiene tu handler confirmarReserva) */}
+                                <button
+                                    onClick={confirmarReserva}
+                                    type="button"
+                                    className="mt-5 w-full rounded-xl bg-white text-zinc-900 font-semibold py-3 hover:bg-zinc-200 transition disabled:opacity-60"
+                                >
+                                    Continuar
+                                </button>
+
+                                {/* Píldora de estado opcional */}
+                                <p className="mt-3 text-xs text-zinc-400">
+                                    Seleccioná fechas y el método de pago para habilitar el botón.
+                                </p>
                             </div>
                         </aside>
                     </div>
                 </div>
             </main>
+
             <Footer />
         </>
     );

@@ -20,6 +20,7 @@ import MisPropiedades from '../pages/Propietarios/MisPropiedades';
 import EditarPropiedad from '../pages/Propietarios/EditarPropiedad';
 import Propiedad from '../pages/Clientes/Propiedad';
 import ReservarPropiedad from '../pages/Propietarios/ReservarPropiedad';
+import ConfirmarReserva from '../pages/Propietarios/ConfirmarReserva';
 
 
 
@@ -97,6 +98,7 @@ export default function AppRoutes() {
           </RequireRole>
           }
         />
+
 
 
         {/* Paginas Empleados */}

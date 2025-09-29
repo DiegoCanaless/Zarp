@@ -228,6 +228,46 @@ const MiPerfil = () => {
     }
   };
 
+
+
+  const handleConectarMercadoPago = async () => {
+    if (!user) return toast.error("No hay usuario autenticado.");
+    if (!usuario?.id) return toast.error("No se encontró el id del cliente.");
+
+    try {
+      setSaving(true);
+
+      const res = await fetch(
+        `https://localhost:8080/api/mercadoPago/createAuthClient/21`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Error al conectar con Mercado Pago");
+      }
+
+      const authUrl = await res.text();
+      if (!authUrl || !/^https?:\/\//i.test(authUrl.trim())) {
+        throw new Error("El backend no devolvió una URL válida.");
+      }
+
+      toast.success("Redirigiendo a Mercado Pago…");
+      window.location.assign(authUrl.trim());
+    } catch (e: any) {
+      toast.error(
+        "No se pudo iniciar la conexión con Mercado Pago: " +
+        (e?.message || "Error desconocido")
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-secondary">
       <UsuarioHeader />
@@ -393,8 +433,9 @@ const MiPerfil = () => {
             <ButtonSecondary text="Editar Datos" className="m-auto w-40" bgColor="bg-white" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" onClick={() => setModoEdicion(true)} />
 
             {usuario.rol === "PROPIETARIO" && (
-              <ButtonSecondary text="Conectar Mercado Pago" className="m-auto w-60" bgColor="bg-[#00aae4]" color="text-white" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" onClick={() => setModoEdicion(true)} />
+              <ButtonSecondary text={saving ? "Conectando..." : "Conectar Mercado Pago"} className="m-auto w-60" bgColor="bg-[#00aae4]" color="text-white" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" onClick={handleConectarMercadoPago} disabled={saving} />
             )}
+
           </div>
 
         ) : (
