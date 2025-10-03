@@ -66,7 +66,7 @@ export const UsuarioHeader = () => {
         CLIENTE: linksCliente,
         PROPIETARIO: [
             { title: "Mensajes", url: "#", icon: <MdEmail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
-            { title: "Reservas", url: "#", icon: <FaHouseChimney color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+            { title: "Reservas", url: "/Reservas", icon: <FaHouseChimney color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             { title: "Mis Propiedades", url: "/misPropiedades", icon: <MdHolidayVillage color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             ...linksCliente,
         ],
@@ -87,7 +87,7 @@ export const UsuarioHeader = () => {
     ];
 
     const alerta: any = () => {
-        toast.error("Tienes que verificar tu correo y identidad antes de convertirte en propeitario", { duration: 2500 });
+        toast.error("Tienes que verificar tu correo y identidad antes de convertirte en propietario", { duration: 2500 });
     }
 
     return (

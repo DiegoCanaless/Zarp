@@ -20,7 +20,7 @@ import MisPropiedades from '../pages/Propietarios/MisPropiedades';
 import EditarPropiedad from '../pages/Propietarios/EditarPropiedad';
 import Propiedad from '../pages/Clientes/Propiedad';
 import ReservarPropiedad from '../pages/Propietarios/ReservarPropiedad';
-import ConfirmarReserva from '../pages/Propietarios/ConfirmarReserva';
+import Reservas from '../pages/Propietarios/Reservas';
 
 
 
@@ -95,6 +95,13 @@ export default function AppRoutes() {
         <Route path='/ReservarPropiedad/:id' element={
           <RequireRole allowed={["PROPIETARIO"]} >
             <ReservarPropiedad />
+          </RequireRole>
+          }
+        />
+
+        <Route path='/Reservas' element={
+          <RequireRole allowed={["PROPIETARIO"]} >
+            <Reservas />
           </RequireRole>
           }
         />
