@@ -46,10 +46,10 @@ const CrearPropiedad = () => {
             try {
                 setLoading(true);
                 const [propiedadesRes, personasRes, ambientesRes, caracteristicasRes] = await Promise.all([
-                    fetch("http://localhost:8080/api/tipoPropiedades"),
-                    fetch("http://localhost:8080/api/tipoPersona"),
-                    fetch("http://localhost:8080/api/ambientes"),
-                    fetch("http://localhost:8080/api/caracteristicas"),
+                    fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPropiedades`),
+                    fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPersona`),
+                    fetch(`${import.meta.env.VITE_APIBASE}/api/ambientes`),
+                    fetch(`${import.meta.env.VITE_APIBASE}/api/caracteristicas`),
                 ]);
 
                 const tipoPropiedadesres: TipoPropiedad[] = await propiedadesRes.json();
@@ -145,7 +145,7 @@ const CrearPropiedad = () => {
 
         try {
             setCreating(true);
-            const res = await fetch("http://localhost:8080/api/propiedades/save", {
+            const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/save`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

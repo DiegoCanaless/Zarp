@@ -5,7 +5,6 @@ import { GenericTable } from "../../ui/TablaGenerica";
 import { Button, Modal, Box, Typography, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
-const CLIENTES_API = "http://localhost:8080/api/clientes";
 const PROPIEDADES_API = "http://localhost:8080/api/propiedades";
 
 // Modal custom style (usando color de fondo del sistema)
@@ -53,8 +52,8 @@ const ListaPropiedades = () => {
         setErr(null);
 
         Promise.all([
-            fetch(CLIENTES_API).then(res => res.ok ? res.json() : Promise.reject(res)),
-            fetch(PROPIEDADES_API).then(res => res.ok ? res.json() : Promise.reject(res)),
+            fetch(`${import.meta.env.VITE_APIBASE}/api/clientes`).then(res => res.ok ? res.json() : Promise.reject(res)),
+            fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades`).then(res => res.ok ? res.json() : Promise.reject(res)),
         ])
             .then(([clientesData, propiedadesData]) => {
                 setClientes(clientesData);
@@ -102,7 +101,7 @@ const ListaPropiedades = () => {
     // PATCH toggleActivo para usuario
     const handleToggleUsuario = async (id: number) => {
         try {
-            const resp = await fetch(`${CLIENTES_API}/toggleActivo/${id}`, { method: "PATCH" });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH" });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             setClientes(cur =>
                 cur.map(c =>
@@ -117,7 +116,7 @@ const ListaPropiedades = () => {
     // PATCH toggleActivo para propiedad
     const handleTogglePropiedad = async (id: number) => {
         try {
-            const resp = await fetch(`${PROPIEDADES_API}/toggleActivo/${id}`, { method: "PATCH" });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/toggleActivo/${id}`, { method: "PATCH" });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             setPropiedades(cur =>
                 cur.map(p =>

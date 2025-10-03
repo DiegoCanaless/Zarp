@@ -58,7 +58,7 @@ const MiPerfil = () => {
   const patchVerificacionBackend = async (clienteId: number, token?: string) => {
     try {
       const res = await fetch(
-        `http://localhost:8080/api/clientes/verificacion-correo/${clienteId}`,
+        `${import.meta.env.VITE_APIBASE}/api/clientes/verificacion-correo/${clienteId}`,
         {
           method: "PATCH",
           headers: {
@@ -238,7 +238,7 @@ const MiPerfil = () => {
       setSaving(true);
 
       const res = await fetch(
-        `https://localhost:8080/api/mercadoPago/createAuthClient/21`,
+        `${import.meta.env.VITE_APIBASE}/api/mercadoPago/createAuthClient/21`,
         {
           method: "POST",
           headers: {

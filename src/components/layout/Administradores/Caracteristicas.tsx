@@ -6,7 +6,7 @@ import { GenericTable } from '../../ui/TablaGenerica';
 import Switch from "@mui/material/Switch";
 import type { CaracteristicaResponseDTO } from '../../../types/entities/caracteristica/CaracteristicaResponseDTO';
 
-const API = "http://localhost:8080/api/caracteristicas";
+const API = `${import.meta.env.VITE_APIBASE}/api/caracteristicas`;
 
 const Caracteristicas = () => {
     const [modalAbierto, setModalAbierto] = useState(false);

@@ -44,7 +44,7 @@ const VerificarPropiedad = () => {
     const handleValido = async () => {
         try {
             const res = await fetch(
-                `http://localhost:8080/api/propiedades/activar/${verificacion.id}?activar=true`,
+                `${import.meta.env.VITE_APIBASE}/api/propiedades/activar/${verificacion.id}?activar=true`,
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
@@ -62,7 +62,7 @@ const VerificarPropiedad = () => {
     const handleInvalido = async () => {
         try {
             const res = await fetch(
-                `http://localhost:8080/api/propiedades/activar/${verificacion.id}?activar=false`,
+                `${import.meta.env.VITE_APIBASE}/api/propiedades/activar/${verificacion.id}?activar=false`,
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },

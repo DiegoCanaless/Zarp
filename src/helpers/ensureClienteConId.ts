@@ -3,7 +3,7 @@ import type { ClienteDTO } from "../types/entities/cliente/ClienteDTO";
 import type { ClienteResponseDTO } from "../types/entities/cliente/ClienteResponseDTO";
 
 // Si usás Vite, podés definir VITE_API_BASE en .env, si no, fallback a localhost:
-const API_BASE = import.meta?.env?.VITE_API_BASE ?? "http://localhost:8080";
+const API_BASE = `${import.meta.env.VITE_APIBASE}`;
 const API_CLIENTES = `${API_BASE}/api/clientes`;
 
 /** -------- Helpers internos -------- */

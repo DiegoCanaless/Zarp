@@ -9,7 +9,7 @@ const DocumentosVerificacion = () => {
   const [error, setError] = useState<string | null>(null)
   const [cargando, setCargando] = useState<boolean>(true)
   useEffect(() => {
-    fetch("http://localhost:8080/api/verificacionClientes").then((res) => {
+    fetch(`${import.meta.env.VITE_APIBASE}/api/verificacionClientes`).then((res) => {
       if (!res.ok) throw new Error("Error en la respuesta");
       return res.json();
     })

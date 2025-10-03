@@ -43,7 +43,7 @@ const Propiedad = () => {
                 setLoading(true);
                 setError(null);
 
-                const res = await fetch(`http://localhost:8080/api/propiedades/getById/${id}`);
+                const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/getById/${id}`);
                 if (!res.ok) throw new Error("Error al obtener la propiedad");
 
                 const data: PropiedadResponseDTO = await res.json();

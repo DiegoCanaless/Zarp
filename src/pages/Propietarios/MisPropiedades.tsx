@@ -25,7 +25,7 @@ const MisPropiedades = () => {
                 setError("")
                 setCargando(true)
 
-                const response = await fetch(`http://localhost:8080/api/propiedades/cliente/${usuario.id}`)
+                const response = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/cliente/${usuario.id}`)
                 if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`)
 
                 const data: PropiedadResponseDTO[] = await response.json()
@@ -52,7 +52,7 @@ const MisPropiedades = () => {
 
     const toggleActivo = async (id: number) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/propiedades/toggleActivo/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/toggleActivo/${id}`, {
                 method: "PATCH"
             })
             if (!response.ok) throw new Error("Error al cambiar estado")
@@ -105,7 +105,9 @@ const MisPropiedades = () => {
                                     <h1 className="text-lg font-semibold mb-2 truncate">{propiedad.nombre}</h1>
                                     <p className="text-sm text-gray-300 line-clamp-2 flex-grow">{propiedad.descripcion}</p>
                                     <div className="flex flex-col items-start gap-2 mt-4">
-                                        <ButtonTertiary className="cursor-pointer" text="Ver Propiedad" maxWidth="w-[140px]" color="text-white" fontSize="text-sm" />
+                                        <ButtonTertiary className="cursor-pointer" text="Reservas" maxWidth="w-[140px]" color="text-white" fontSize="text-sm" onClick={() => navigate(`/ReservacionesPropiedad/${propiedad.id}`)} />
+
+                                        <ButtonTertiary className="cursor-pointer" text="Ver Propiedad" maxWidth="w-[140px]" color="text-white" fontSize="text-sm" onClick={() => navigate(`/Propiedad/${propiedad.id}`)} />
                                         <ButtonTertiary className="cursor-pointer" text="Editar" maxWidth="w-[140px]" color="text-white" fontSize="text-sm" onClick={() => navigate(`/EditarPropiedad/${propiedad.id}`)} />
                                         <ButtonSecondary className="cursor-pointer" text={propiedad.activo ? "Desactivar" : "Activar"} maxWidth="w-[140px]" bgColor={propiedad.activo ? "bg-red-500" : "bg-green-500"} color="text-white" fontSize="text-sm" onClick={() => toggleActivo(propiedad.id)} />
                                     </div>

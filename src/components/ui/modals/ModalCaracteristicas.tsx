@@ -94,10 +94,10 @@ const ModalCaracteristica = ({ onClose, onSaved, caracteristica }: ModalCaracter
                             };
 
 
-                            let url = "http://localhost:8080/api/caracteristicas/save";
+                            let url = `${import.meta.env.VITE_APIBASE}/api/caracteristicas/save`;
                             let method: "POST" | "PUT" = "POST";
                             if (isEdit && caracteristica) {
-                                url = `http://localhost:8080/api/caracteristicas/update/${caracteristica.id}`;
+                                url = `${import.meta.env.VITE_APIBASE}/api/caracteristicas/update/${caracteristica.id}`;
                                 method = "PUT";
                             }
 
@@ -113,7 +113,7 @@ const ModalCaracteristica = ({ onClose, onSaved, caracteristica }: ModalCaracter
                             // Verificación inmediata: traemos la entidad por id para ver qué quedó guardado
                             if (isEdit && caracteristica) {
                                 const verify = await fetch(
-                                    `http://localhost:8080/api/caracteristicas/getById/${caracteristica.id}?_=${Date.now()}`,
+                                    `${import.meta.env.VITE_APIBASE}/api/caracteristicas/getById/${caracteristica.id}?_=${Date.now()}`,
                                     { cache: 'no-store' }
                                 );
                                 const verJson = await verify.json();

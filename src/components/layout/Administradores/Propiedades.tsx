@@ -6,7 +6,6 @@ import { GenericTable } from '../../ui/TablaGenerica';
 import Switch from "@mui/material/Switch";
 import type { TipoPropiedadResponseDTO } from '../../../types/entities/tipoPropiedad/TipoPropiedadResponseDTO';
 
-const API = "http://localhost:8080/api/tipoPropiedades";
 
 const TipoPropiedad = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -28,7 +27,7 @@ const TipoPropiedad = () => {
   const fetchTipoPropiedades = () => {
     setLoading(true);
     setErr(null);
-    const url = `${API}?_=${Date.now()}`;
+    const url = `${import.meta.env.VITE_APIBASE}?_=${Date.now()}`;
     fetch(url, { cache: "no-store" })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -57,7 +56,7 @@ const TipoPropiedad = () => {
     );
 
     try {
-      const resp = await fetch(`${API}/toggleActivo/${id}`, {
+      const resp = await fetch(`${import.meta.env.VITE_APIBASE}/toggleActivo/${id}`, {
         method: "PATCH",
       });
 

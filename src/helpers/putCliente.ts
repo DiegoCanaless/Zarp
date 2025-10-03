@@ -6,7 +6,7 @@ export const putCliente = async (
     dto: ClienteDTO,
     token?: string
 ): Promise<ClienteResponseDTO> => {
-    const res = await fetch(`http://localhost:8080/api/clientes/update/${id}`, {
+    const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/update/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",

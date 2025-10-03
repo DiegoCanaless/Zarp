@@ -39,10 +39,10 @@ const ModalTipoPersona = ({ onClose, onSaved, tipoPersona }: ModalTipoPersonaPro
                                 descripcion: values.descripcion.trim(),
                             };
 
-                            let url = "http://localhost:8080/api/tipoPersona/save";
+                            let url = `${import.meta.env.VITE_APIBASE}/api/tipoPersona/save`;
                             let method: "POST" | "PUT" = "POST";
                             if (isEdit && tipoPersona) {
-                                url = `http://localhost:8080/api/tipoPersona/update/${tipoPersona.id}`;
+                                url = `${import.meta.env.VITE_APIBASE}/api/tipoPersona/update/${tipoPersona.id}`;
                                 method = "PUT";
                             }
 

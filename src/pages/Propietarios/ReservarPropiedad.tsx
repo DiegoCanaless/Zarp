@@ -68,7 +68,7 @@ const ReservarPropiedad = () => {
         const fetchPropiedad = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:8080/api/propiedades/getById/${id}`
+                    `${import.meta.env.VITE_APIBASE}/api/propiedades/getById/${id}`
                 );
                 if (!res.ok) throw new Error("Error al traer la propiedad");
                 const data: PropiedadResponseDTO = await res.json();
@@ -84,7 +84,7 @@ const ReservarPropiedad = () => {
         const fetchFechasReservadas = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:8080/api/propiedades/reservas/${id}`
+                    `${import.meta.env.VITE_APIBASE}/api/propiedades/reservas/${id}`
                 );
                 if (!res.ok) {
                     const msg = await res.text();
@@ -226,7 +226,7 @@ const ReservarPropiedad = () => {
                 return;
             }
             const res = await fetch(
-                "https://579f9e4aecb7.ngrok-free.app/api/mercadoPago/create-preference",
+                `${import.meta.env.VITE_APIBASE}/api/mercadoPago/create-preference`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },

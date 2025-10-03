@@ -42,10 +42,10 @@ const ModalAmbiente = ({ onClose, onSaved, ambiente }: ModalAmbienteProps) => {
                                 denominacion: values.denominacion.trim(),
                             };
 
-                            let url = "http://localhost:8080/api/ambientes/save";
+                            let url = `${import.meta.env.VITE_APIBASE}/api/ambientes/save`;
                             let method: "POST" | "PUT" = "POST";
                             if (isEdit && ambiente) {
-                                url = `http://localhost:8080/api/ambientes/update/${ambiente.id}`;
+                                url = `${import.meta.env.VITE_APIBASE}/api/ambientes/update/${ambiente.id}`;
                                 method = "PUT";
                             }
 

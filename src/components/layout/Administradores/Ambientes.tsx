@@ -6,7 +6,7 @@ import { GenericTable } from '../../ui/TablaGenerica';
 import Switch from "@mui/material/Switch";
 import type { AmbienteResponseDTO } from '../../../types/entities/ambiente/AmbienteResponseDTO';
 
-const API = "http://localhost:8080/api/ambientes";
+const API = `${import.meta.env.VITE_APIBASE}/api/ambientes`;
 
 const Ambientes = () => {
   const [modalAbierto, setModalAbierto] = useState(false);

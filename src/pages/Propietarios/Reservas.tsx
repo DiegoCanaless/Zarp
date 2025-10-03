@@ -54,13 +54,11 @@ const Reservas = () => {
                 let serverMsg = `Error (${res.status})`;
                 try {
                     const data = await res.json();
-                    // si el back siempre manda "mensaje"
                     serverMsg = data?.mensaje || serverMsg;
                 } catch {
                     serverMsg = await res.text();
                 }
 
-                console.error("❌ Backend dijo:", serverMsg);
                 toast.error(serverMsg, {
                     duration: 4000,
                     icon: "⚠️",
@@ -171,84 +169,80 @@ const Reservas = () => {
                     <p>No tenés reservas por ahora.</p>
                 )}
                 {!cargando && reservas.length > 0 && (
-                    <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {reservas.filter((r: ReservaResponseDTO) => ["RESERVADA", "ACTIVA"].includes(r.estado)).map((reserva: ReservaResponseDTO) => (
-                            <li key={reserva.id} className="flex flex-col sm:flex-row bg-tertiary justify-between rounded-xl gap-2 w-full overflow-hidden" >
-                                <img src={reserva.propiedad.detalleImagenes[0].imagen.urlImagen} alt="" className="w-full md:w-25 h-40 md:h-30 object-cover rounded-t-xl md:rounded-t-none md:rounded-l-xl" />
-                                <div className="w-50 py-2 flex justify-between w-full px-2">
-                                    <div className="flex flex-col">
-                                        <h3 className="mb-2">{reserva.propiedad.nombre}</h3>
-                                        <p className="font-light text-xs">Desde: {reserva.fechaInicio}</p>
-                                        <p className="font-light text-xs mb-3">Hasta: {reserva.fechaFin}</p>
-                                        <p className="font-light text-xs mb-3">Estado: {reserva.estado}</p>
-                                    </div>
 
-                                    <div className="flex flex-col justify-end pr-2 gap-2">
-                                        <ButtonTertiary className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
-                                        <ButtonTertiary onClick={() => abrirPuntuacion(reserva)} className="cursor-pointer" bgColor="bg-red-700" text="Ver Mas" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                    <div>
+                        <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {reservas.filter((r: ReservaResponseDTO) => ["RESERVADA", "ACTIVA"].includes(r.estado)).map((reserva: ReservaResponseDTO) => (
+                                <li key={reserva.id} className="flex flex-col sm:flex-row bg-tertiary justify-between rounded-xl gap-2 w-full overflow-hidden" >
+                                    <img src={reserva.propiedad.detalleImagenes[0].imagen.urlImagen} alt="" className="w-full md:w-25 h-40 md:h-30 object-cover rounded-t-xl md:rounded-t-none md:rounded-l-xl" />
+                                    <div className="w-50 py-2 flex justify-between w-full px-2">
+                                        <div className="flex flex-col">
+                                            <h3 className="mb-2">{reserva.propiedad.nombre}</h3>
+                                            <p className="font-light text-xs">Desde: {reserva.fechaInicio}</p>
+                                            <p className="font-light text-xs mb-3">Hasta: {reserva.fechaFin}</p>
+                                            <p className="font-light text-xs mb-3">Estado: {reserva.estado}</p>
+                                        </div>
+
+                                        <div className="flex flex-col justify-end pr-2 gap-2">
+                                            <ButtonTertiary className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                            <ButtonTertiary onClick={() => abrirPuntuacion(reserva)} className="cursor-pointer" bgColor="bg-red-700" text="Ver Mas" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                        </div>
                                     </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <h1 className="text-lg font-medium mt-10 text-white/50">Reservas Finalizadas:</h1>
+                        <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {reservas.filter((r: ReservaResponseDTO) => ["FINALIZADA", "CANCELADA"].includes(r.estado))
+                                .map((reserva: ReservaResponseDTO) => (
+                                    <li key={reserva.id} className="flex flex-col sm:flex-row bg-tertiary justify-between rounded-xl gap-2 w-full opacity-60 hover:opacity-80 transition overflow-hidden" >
+                                        <img src={reserva.propiedad.detalleImagenes[0].imagen.urlImagen} alt="" className="w-full md:w-25 h-40 md:h-30 object-cover rounded-t-xl md:rounded-t-none md:rounded-l-xl" />
+                                        <div className="w-50 py-2 flex justify-between w-full px-2">
+                                            <div className="flex flex-col">
+                                                <h3 className="mb-2">{reserva.propiedad.nombre}</h3>
+                                                <p className="font-light text-xs">Desde: {reserva.fechaInicio}</p>
+                                                <p className="font-light text-xs mb-3">Hasta: {reserva.fechaFin}</p>
+                                                <p className="font-light text-xs mb-3">Estado: {reserva.estado}</p>
+                                            </div>
+
+                                            <div className="flex flex-col justify-end pr-2 gap-2">
+                                                <ButtonTertiary className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                                <ButtonTertiary onClick={() => abrirPuntuacion(reserva)} className="cursor-pointer" bgColor="bg-red-700" text="Ver Mas" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                        </ul>
+                    </div>
+
                 )}
 
-                <h1 className="text-lg font-medium mt-10 text-white/50">Reservas Finalizadas:</h1>
-                <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {reservas.filter((r: ReservaResponseDTO) => ["FINALIZADA", "CANCELADA"].includes(r.estado))
-                        .map((reserva: ReservaResponseDTO) => (
-                            <li key={reserva.id} className="flex flex-col sm:flex-row bg-tertiary justify-between rounded-xl gap-2 w-full opacity-60 hover:opacity-80 transition overflow-hidden" >
-                                <img src={reserva.propiedad.detalleImagenes[0].imagen.urlImagen} alt="" className="w-full md:w-25 h-40 md:h-30 object-cover rounded-t-xl md:rounded-t-none md:rounded-l-xl" />
-                                <div className="w-50 py-2 flex justify-between w-full px-2">
-                                    <div className="flex flex-col">
-                                        <h3 className="mb-2">{reserva.propiedad.nombre}</h3>
-                                        <p className="font-light text-xs">Desde: {reserva.fechaInicio}</p>
-                                        <p className="font-light text-xs mb-3">Hasta: {reserva.fechaFin}</p>
-                                        <p className="font-light text-xs mb-3">Estado: {reserva.estado}</p>
-                                    </div>
 
-                                    <div className="flex flex-col justify-end pr-2 gap-2">
-                                        <ButtonTertiary className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
-                                        <ButtonTertiary onClick={() => abrirPuntuacion(reserva)} className="cursor-pointer" bgColor="bg-red-700" text="Ver Mas" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
-                </ul>
             </main>
+
+
             {modalPuntuacion && reservaSeleccionada && (
-                // OVERLAY (fondo) a pantalla completa
-                <div
-                    className="fixed inset-0 z-[100] bg-black/50 flex items-end"
-                    role="dialog"
-                    aria-modal="true"
+                <div className="fixed inset-0 z-[100] bg-black/50 flex items-end md:items-center md:justify-center" role="dialog" aria-modal="true"
                     onClick={(e) => {
-                        // cerrar si clickea fuera del sheet
                         if (e.target === e.currentTarget) cerrarPuntuacion();
                     }}
-                    onKeyDown={(e) => { if (e.key === "Escape") cerrarPuntuacion(); }}
+                    onKeyDown={(e) => {
+                        if (e.key === "Escape") cerrarPuntuacion();
+                    }}
                     tabIndex={-1}
                 >
-                    {/* SHEET (contenedor modal) pegado abajo sin gaps */}
-                    <div className="w-full max-h-[85vh] bg-tertiary rounded-t-2xl p-4 overflow-y-auto">
+                    <div className="w-full max-h-[85vh] bg-tertiary rounded-t-2xl p-4 overflow-y-auto md:w-[480px] md:rounded-2xl md:max-h-[90vh]">
                         <div className="flex justify-between text-white">
                             <div className="min-w-0">
                                 <h2 className="font-medium truncate">{reservaSeleccionada.propiedad.nombre}</h2>
                                 <span className="text-xs">{huespedes} Huespedes</span>
                             </div>
-                            <button
-                                aria-label="Cerrar"
-                                className="p-1 -m-1"
-                                onClick={cerrarPuntuacion}
-                            >
-                                <AiOutlineClose fontSize={20} />
-                            </button>
+                            <button aria-label="Cerrar" className="p-1 -m-1" onClick={cerrarPuntuacion} > <AiOutlineClose fontSize={20} /></button>
                         </div>
 
                         <div className="flex justify-between text-xs text-white mt-1">
-                            <p className="pr-2 truncate">
-                                Propietario: {reservaSeleccionada.propiedad.propietario?.nombreCompleto}
-                            </p>
+                            <p className="pr-2 truncate">Propietario: {reservaSeleccionada.propiedad.propietario?.nombreCompleto}</p>
                             <div className="flex flex-col mb-2 text-right shrink-0">
                                 <p>Desde: {reservaSeleccionada.fechaInicio}</p>
                                 <p>Hasta: {reservaSeleccionada.fechaFin}</p>
@@ -273,6 +267,8 @@ const Reservas = () => {
                     </div>
                 </div>
             )}
+
+
 
             <Footer />
 

@@ -47,7 +47,7 @@ const UserVerificiacion = () => {
 
       console.log("Voy a enviar:", verificacion);
 
-      const response = await fetch(`http://localhost:8080/api/verificacionClientes/save`, {
+      const response = await fetch(`${import.meta.env.VITE_APIBASE}/api/verificacionClientes/save`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",

@@ -8,7 +8,7 @@ const PropiedadesVerificacion = () => {
     const [cargando, setCargando] = useState<boolean>(true);
 
     useEffect(() => {
-        fetch("http://localhost:8080/api/propiedades/aVerificar")
+        fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/aVerificar`)
             .then((res) => {
                 if (!res.ok) throw new Error("Error en la respuesta");
                 return res.json();

@@ -2,7 +2,7 @@
 import type { ClienteDTO } from "../types/entities/cliente/ClienteDTO";
 import type { ClienteResponseDTO } from "../types/entities/cliente/ClienteResponseDTO";
 
-const API = "http://localhost:8080/api/clientes";
+const API = `${import.meta.env.VITE_APIBASE}/api/clientes`;
 
 async function getByUid(uid: string): Promise<ClienteResponseDTO> {
     const res = await fetch(`${API}/getByUid/${encodeURIComponent(uid)}`);

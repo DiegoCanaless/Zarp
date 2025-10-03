@@ -13,9 +13,6 @@ type ModalEmpleadoProps = {
     onSaved?: () => void;
 };
 
-const API_BASE = import.meta?.env?.VITE_API_BASE ?? "http://localhost:8080";
-const API_EMPLEADOS = `${API_BASE}/api/empleados`;
-
 const registerSchema = yup.object().shape({
     name: yup.string().required("El nombre es requerido").min(3, "Mínimo 3 caracteres"),
     email: yup.string().required("El correo es requerido").email("Formato inválido"),
@@ -75,7 +72,7 @@ const ModalEmpleado = ({ onClose, onSaved }: ModalEmpleadoProps) => {
                                 rol: "EMPLEADO",
                             };
 
-                            const resp = await fetch(`${API_EMPLEADOS}/save`, {
+                            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/empleados/save`, {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify(empleado),

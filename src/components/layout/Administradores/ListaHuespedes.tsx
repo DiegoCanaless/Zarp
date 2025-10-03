@@ -3,8 +3,6 @@ import type { ClienteResponseDTO } from "../../../types/entities/cliente/Cliente
 import type { PropiedadResponseDTO } from "../../../types/entities/propiedad/PropiedadResponseDTO";
 import { GenericTable } from "../../ui/TablaGenerica";
 
-const CLIENTES_API = "http://localhost:8080/api/clientes";
-const PROPIEDADES_API = "http://localhost:8080/api/propiedades";
 
 const Huespedes = () => {
     const [clientes, setClientes] = useState<ClienteResponseDTO[]>([]);
@@ -20,8 +18,8 @@ const Huespedes = () => {
         setLoading(true);
         setErr(null);
         Promise.all([
-            fetch(CLIENTES_API).then(res => res.ok ? res.json() : Promise.reject(res)),
-            fetch(PROPIEDADES_API).then(res => res.ok ? res.json() : Promise.reject(res)),
+            fetch(`${import.meta.env.VITE_APIBASE}/api/clientes`).then(res => res.ok ? res.json() : Promise.reject(res)),
+            fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades`).then(res => res.ok ? res.json() : Promise.reject(res)),
         ])
             .then(([clientesData, propiedadesData]) => {
                 setClientes(clientesData);
@@ -55,7 +53,7 @@ const Huespedes = () => {
     // PATCH toggleActivo
     const handleToggleActivo = async (id: number) => {
         try {
-            const resp = await fetch(`${CLIENTES_API}/toggleActivo/${id}`, { method: "PATCH" });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH" });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             // Actualiza localmente el campo activo (toggle)
             setClientes(cur =>

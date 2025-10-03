@@ -2,7 +2,7 @@ export async function fetchPropiedadesByCliente(idCliente: number, token?: strin
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     if (token) headers['Authorization'] = `Bearer ${token}`
 
-    const resp = await fetch(`http://localhost:8080/api/propiedades/cliente/${idCliente}`, { headers })
+    const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/cliente/${idCliente}`, { headers })
     if (!resp.ok) return [] // o throw si preferís
     return await resp.json()
 }

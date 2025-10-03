@@ -36,10 +36,10 @@ const ModalPropiedad = ({ onClose, onSaved, tipoPropiedad }: ModalTipoPropiedadP
                                 denominacion: values.denominacion.trim(),
                             };
 
-                            let url = "http://localhost:8080/api/tipoPropiedades/save";
+                            let url = `${import.meta.env.VITE_APIBASE}/api/tipoPropiedades/save`;
                             let method: "POST" | "PUT" = "POST";
                             if (isEdit && tipoPropiedad) {
-                                url = `http://localhost:8080/api/tipoPropiedades/update/${tipoPropiedad.id}`;
+                                url = `${import.meta.env.VITE_APIBASE}/api/tipoPropiedades/update/${tipoPropiedad.id}`;
                                 method = "PUT";
                             }
 

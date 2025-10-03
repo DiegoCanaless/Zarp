@@ -16,7 +16,7 @@ const VerificarDocumentos = () => {
     const handleValido = async () => {
         try {
             const res = await fetch(
-                `http://localhost:8080/api/clientes/verificacion-documento/${verificacion.cliente.id}?verificado=true`,
+                `${import.meta.env.VITE_APIBASE}/api/clientes/verificacion-documento/${verificacion.cliente.id}?verificado=true`,
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
@@ -34,7 +34,7 @@ const VerificarDocumentos = () => {
     const handleInvalido = async () => {
         try {
             const res = await fetch(
-                `http://localhost:8080/api/clientes/verificacion-documento/${verificacion.cliente.id}?verificado=false`,
+                `${import.meta.env.VITE_APIBASE}/api/clientes/verificacion-documento/${verificacion.cliente.id}?verificado=false`,
                 { method: "PATCH", headers: { "Content-Type": "application/json" } }
             );
             if (!res.ok) throw new Error(`HTTP ${res.status}`);

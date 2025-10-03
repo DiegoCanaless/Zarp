@@ -61,7 +61,7 @@ export default function Inicio() {
   useEffect(() => {
     (async () => {
       try {
-        const rProps = await fetch("http://localhost:8080/api/propiedades");
+        const rProps = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades`);
         const data: PropiedadResponseDTO[] = await rProps.json();
 
         // Solo activas + propietario activo + verificación APROBADA
@@ -88,7 +88,7 @@ export default function Inicio() {
       }
 
       try {
-        const rTipos = await fetch("http://localhost:8080/api/tipoPersona");
+        const rTipos = await fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPersona`);
         const tipos: TipoPersona[] = await rTipos.json();
         setTiposPersona(tipos ?? []);
 

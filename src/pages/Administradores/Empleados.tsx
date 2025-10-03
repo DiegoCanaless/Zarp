@@ -30,7 +30,7 @@ const Empleados = () => {
 
     const handleToggleActivo = async (id: number) => {
         try {
-            const resp = await fetch(`http://localhost:8080/api/empleados/toggleActivo/${id}`, { method: "PATCH" });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/empleados/toggleActivo/${id}`, { method: "PATCH" });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             setEmpleados(element =>
                 element.map(element =>
@@ -47,7 +47,7 @@ const Empleados = () => {
         setError(null);
         try {
             const res = await fetch(
-                `http://localhost:8080/api/empleados`,
+                `${import.meta.env.VITE_APIBASE}/api/empleados`,
                 {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },

@@ -70,8 +70,8 @@ const EditarPropiedad = () => {
             try {
                 setCargando(true);
                 const [propRes, caracRes] = await Promise.all([
-                    fetch(`http://localhost:8080/api/propiedades/getById/${id}`),
-                    fetch("http://localhost:8080/api/caracteristicas"),
+                    fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/getById/${id}`),
+                    fetch(`${import.meta.env.VITE_APIBASE}/api/caracteristicas`),
                 ]);
 
                 if (!propRes.ok) throw new Error("No se pudo cargar la propiedad");
@@ -212,7 +212,7 @@ const EditarPropiedad = () => {
                         try {
                             setGuardando(true);
 
-                            const res = await fetch(`http://localhost:8080/api/propiedades/update/${id}`, {
+                            const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/update/${id}`, {
                                 method: "PUT",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify(payload),
