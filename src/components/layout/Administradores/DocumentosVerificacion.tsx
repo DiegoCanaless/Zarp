@@ -28,7 +28,7 @@ const DocumentosVerificacion = () => {
   return (
     <>
 
-      <div className="flex flex-col px-20">
+      <div className="flex flex-col px-20 min-h-screen">
         <h1 className="mt-5 text-white text-lg mb-5">Verificacion de Documentos</h1>
 
         {cargando && <p className="text-center">Cargando Verificaciones...</p>}

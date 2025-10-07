@@ -10,7 +10,7 @@ import VerificacionesAdmin from '../pages/Administradores/VerificacionesAdmin';
 import ErrorPage from "../pages/Clientes/Error"
 import RequireRole from './Guards/RequireRole';
 import VerificarDocumentos from '../pages/Administradores/VerificarDocumentos';
-import {Contactanos} from "../pages/Clientes/Contactanos"
+import { Contactanos } from "../pages/Clientes/Contactanos"
 import Configuracion from '../pages/Administradores/Configuracion';
 import VerificarPropiedad from '../pages/Administradores/VerificarPropiedad';
 import Listas from '../pages/Administradores/Listas';
@@ -22,6 +22,8 @@ import Propiedad from '../pages/Clientes/Propiedad';
 import ReservarPropiedad from '../pages/Propietarios/ReservarPropiedad';
 import Reservas from '../pages/Propietarios/Reservas';
 import ReservacionesPropiedad from '../pages/Propietarios/ReservacionesPropiedad';
+import BandejaChats from '../pages/Clientes/BandejaChats';
+import Chat from '../pages/Clientes/Chat';
 
 
 
@@ -38,36 +40,38 @@ export default function AppRoutes() {
 
         {/* Paginas Clientes y Propietarios*/}
         <Route path='/Inicio' element={
-          <RequireRole allowed={["CLIENTE","PROPIETARIO"]} >
+          <RequireRole allowed={["CLIENTE", "PROPIETARIO"]} >
             <Inicio />
           </RequireRole>
-          }
+        }
         />
         <Route path='/Contactanos' element={
-          <RequireRole allowed={["CLIENTE","PROPIETARIO"]} >
+          <RequireRole allowed={["CLIENTE", "PROPIETARIO"]} >
             <Contactanos />
           </RequireRole>
-          }
+        }
         />
         <Route path='/Perfil' element={
-          <RequireRole allowed={["CLIENTE","PROPIETARIO"]} >
+          <RequireRole allowed={["CLIENTE", "PROPIETARIO"]} >
             <MiPerfil />
           </RequireRole>
-          }
+        }
         />
         <Route path='/userVerificacion' element={
-          <RequireRole allowed={["CLIENTE","PROPIETARIO"]} >
+          <RequireRole allowed={["CLIENTE", "PROPIETARIO"]} >
             <UserVerificiacion />
           </RequireRole>
-          }
+        }
         />
 
         <Route path="/Propiedad/:id" element={
-          <RequireRole allowed={["CLIENTE","PROPIETARIO"]}>
-            <Propiedad/>
+          <RequireRole allowed={["CLIENTE", "PROPIETARIO"]}>
+            <Propiedad />
           </RequireRole>
-          }
+        }
         />
+
+
 
         {/* Pagina Propietarios  */}
 
@@ -75,21 +79,21 @@ export default function AppRoutes() {
           <RequireRole allowed={["PROPIETARIO"]} >
             <CrearPropiedad />
           </RequireRole>
-          }
+        }
         />
 
         <Route path='/misPropiedades' element={
           <RequireRole allowed={["PROPIETARIO"]} >
             <MisPropiedades />
           </RequireRole>
-          }
+        }
         />
 
         <Route path='/EditarPropiedad/:id' element={
           <RequireRole allowed={["PROPIETARIO"]} >
             <EditarPropiedad />
           </RequireRole>
-          }
+        }
         />
 
 
@@ -97,61 +101,87 @@ export default function AppRoutes() {
           <RequireRole allowed={["PROPIETARIO"]} >
             <ReservarPropiedad />
           </RequireRole>
-          }
+        }
         />
 
         <Route path='/ReservacionesPropiedad/:id' element={
           <RequireRole allowed={["PROPIETARIO"]} >
             <ReservacionesPropiedad />
           </RequireRole>
-          }
+        }
         />
 
         <Route path='/Reservas' element={
           <RequireRole allowed={["PROPIETARIO"]} >
             <Reservas />
           </RequireRole>
+        }
+        />
+
+        <Route path="/BandejaChats" element={
+          <RequireRole allowed={["PROPIETARIO"]}>
+            <BandejaChats />
+          </RequireRole>
+        }
+        />
+
+        <Route
+          path="/Chat/new/:clienteId/:propietarioId"
+          element={
+            <RequireRole allowed={["PROPIETARIO"]}>
+              <Chat />
+            </RequireRole>
           }
         />
+
+        <Route
+          path="/Chat/:id"
+          element={
+            <RequireRole allowed={["PROPIETARIO"]}>
+              <Chat />
+            </RequireRole>
+          }
+        />
+
 
 
 
         {/* Paginas Empleados */}
 
         <Route path='/WelcomeAdmin' element={
-          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
+          <RequireRole allowed={["SUPERADMIN", "EMPLEADO"]} >
             <WelcomeAdmin />
           </RequireRole>
-          }
+        }
         />
 
         <Route path='/VerificacionesAdmin' element={
-          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
+          <RequireRole allowed={["SUPERADMIN", "EMPLEADO"]} >
             <VerificacionesAdmin />
           </RequireRole>
-          }
+        }
         />
 
         <Route path='/VerificarDocumento' element={
-          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
+          <RequireRole allowed={["SUPERADMIN", "EMPLEADO"]} >
             <VerificarDocumentos />
           </RequireRole>
-          }
+        }
         />
 
         <Route path='/VerificarPropiedad' element={
-          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
+          <RequireRole allowed={["SUPERADMIN", "EMPLEADO"]} >
             <VerificarPropiedad />
           </RequireRole>
-          }
+        }
         />
 
 
         <Route path='/Listas' element={
-          <RequireRole allowed={["SUPERADMIN","EMPLEADO"]} >
-            <Listas/>
+          <RequireRole allowed={["SUPERADMIN", "EMPLEADO"]} >
+            <Listas />
           </RequireRole>
-          }
+        }
         />
 
 
@@ -161,14 +191,14 @@ export default function AppRoutes() {
           <RequireRole allowed={["SUPERADMIN"]} >
             <Configuracion />
           </RequireRole>
-          }
+        }
         />
 
         <Route path='/Empleados' element={
           <RequireRole allowed={["SUPERADMIN"]} >
-            <Empleados/>
+            <Empleados />
           </RequireRole>
-          }
+        }
         />
       </Routes>
 
@@ -177,6 +207,6 @@ export default function AppRoutes() {
 
 
 
-      )
+  )
 }
 

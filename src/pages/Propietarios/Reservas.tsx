@@ -8,6 +8,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import { FaStar } from "react-icons/fa";
 import { ButtonPrimary } from "../../components/ui/buttons/ButtonPrimary";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Reservas = () => {
     const [cargando, setCargando] = useState<boolean>(true);
@@ -19,6 +20,8 @@ const Reservas = () => {
 
     const [comentario, setComentario] = useState<string>("");
     const [enviando, setEnviando] = useState<boolean>(false);
+
+    const navigate = useNavigate();
 
     const enviarResena = async () => {
         if (!reservaSeleccionada?.propiedad?.id || !usuario?.id) {
@@ -93,6 +96,7 @@ const Reservas = () => {
 
     const [rating, setRating] = useState<number>(0);
     const [hover, setHover] = useState<number>(0);
+    
 
 
 
@@ -184,7 +188,7 @@ const Reservas = () => {
                                         </div>
 
                                         <div className="flex flex-col justify-end pr-2 gap-2">
-                                            <ButtonTertiary className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                            <ButtonTertiary onClick={() => navigate(`/Chat/new/${usuario.id}/${reserva.propiedad.propietario?.id}`)} className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                             <ButtonTertiary onClick={() => abrirPuntuacion(reserva)} className="cursor-pointer" bgColor="bg-red-700" text="Ver Mas" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                         </div>
                                     </div>
@@ -207,7 +211,7 @@ const Reservas = () => {
                                             </div>
 
                                             <div className="flex flex-col justify-end pr-2 gap-2">
-                                                <ButtonTertiary className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                                <ButtonTertiary onClick={() => navigate(`/Chat/new/${usuario.id}/${reserva.propiedad.propietario?.id}`)} className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                                 <ButtonTertiary onClick={() => abrirPuntuacion(reserva)} className="cursor-pointer" bgColor="bg-red-700" text="Ver Mas" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                             </div>
                                         </div>

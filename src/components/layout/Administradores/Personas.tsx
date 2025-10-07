@@ -27,7 +27,7 @@ const TipoPersona = () => {
   const fetchTipoPersonas = () => {
     setLoading(true);
     setErr(null);
-    const url = `${import.meta.env.VITE_APIBASE}?_=${Date.now()}`;
+    const url = `${import.meta.env.VITE_APIBASE}/api/tipoPersona?_=${Date.now()}`;
     fetch(url, { cache: "no-store" })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -56,7 +56,7 @@ const TipoPersona = () => {
     );
 
     try {
-      const resp = await fetch(`${import.meta.env.VITE_APIBASE}/toggleActivo/${id}`, {
+      const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPersona/toggleActivo/${id}`, {
         method: "PATCH",
       });
 

@@ -65,7 +65,7 @@ export const UsuarioHeader = () => {
     const navbarLinksByRole: Record<string, NavItem[]> = {
         CLIENTE: linksCliente,
         PROPIETARIO: [
-            { title: "Mensajes", url: "#", icon: <MdEmail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+            { title: "Mensajes", url: "/BandejaChats", icon: <MdEmail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             { title: "Reservas", url: "/Reservas", icon: <FaHouseChimney color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             { title: "Mis Propiedades", url: "/misPropiedades", icon: <MdHolidayVillage color="white" fontSize={25} className="cursor-pointer mr-5" /> },
             ...linksCliente,

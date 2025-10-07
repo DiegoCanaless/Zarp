@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { UsuarioHeader } from '../../components/layout/headers/UsuarioHeader'
 import { Footer } from '../../components/layout/Footer'
 import { PropiedadResponseDTO } from '../../types/entities/propiedad/PropiedadResponseDTO'
@@ -9,9 +9,10 @@ import { MdAdd } from 'react-icons/md'
 import { useNavigate } from 'react-router-dom'
 import { ButtonTertiary } from '../../components/ui/buttons/ButtonTertiary'
 import toast from "react-hot-toast";
+import { Client, IMessage } from '@stomp/stompjs'
 
 const MisPropiedades = () => {
-    const [opcion, setOpcion] = useState<boolean>(true) // true = mostrar activas
+    const [opcion, setOpcion] = useState<boolean>(true)
     const [cargando, setCargando] = useState<boolean>(true)
     const [error, setError] = useState<string>("")
     const [propiedades, setPropiedades] = useState<PropiedadResponseDTO[]>([])
@@ -45,6 +46,12 @@ const MisPropiedades = () => {
 
         if (usuario?.id) obtenerPropiedades()
     }, [usuario?.id])
+
+    
+    
+
+
+
 
     const propiedadesFiltradas = useMemo(() => {
         return propiedades.filter((p) => (opcion ? p.activo : !p.activo))
