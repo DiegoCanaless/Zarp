@@ -304,25 +304,35 @@ const MiPerfil = () => {
       const res = await fetch(
         `${import.meta.env.VITE_APIBASE}/api/paypal/guardarDireccionPaypal/${usuario.id}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
-            "Content-Type": "text/plain; charset=utf-8",
+            "Content-Type": "text/plain",
           },
           body: paypalEmail.trim(),
         }
       );
 
       if (!res.ok) {
-        const msg = await res.text().catch(() => "");
-        throw new Error(msg || `HTTP ${res.status}`);
+        let msg = "No se pudo guardar el correo.";
+        // Intenta extraer el mensaje del JSON si es posible
+        try {
+          const data = await res.json();
+          if (data.mensaje) msg = data.mensaje;
+        } catch {
+          // Si no es JSON, intenta como texto plano
+          msg = await res.text();
+        }
+        toast.error(msg);
+        return;
       }
 
       toast.success("Correo de PayPal guardado");
       setModalPaypal(false);
       setPaypalEmail("");
       setPaypalEmailRepeat(""); // Limpiar campo repetir
-    } catch (err: any) {
-      toast.error(`No se pudo guardar el correo: ${err?.message || "Error"}`);
+    } catch (err) {
+      // Si es un fallo de red o fetch
+      toast.error("Error de red o CORS. Intenta nuevamente.");
     } finally {
       setSaving(false);
     }
