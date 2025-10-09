@@ -44,14 +44,14 @@ const VerificarPropiedad = () => {
     const handleValido = async () => {
         try {
             const res = await fetch(
-                `${import.meta.env.VITE_APIBASE}/api/propiedades/activar/${verificacion.id}?activar=true`,
+                `${import.meta.env.VITE_APIBASE}/api/propiedades/verificacion/${verificacion.id}?activar=true`,
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                 }
             );
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            toast.success("Cliente verificado correctamente", { duration: 2500 });
+            toast.success("Propiedad verificada correctamente", { duration: 2500 });
             navigate(-1);
         } catch (e) {
             toast.error("Surgió un error al verificar cliente", { duration: 2500 });
@@ -62,7 +62,7 @@ const VerificarPropiedad = () => {
     const handleInvalido = async () => {
         try {
             const res = await fetch(
-                `${import.meta.env.VITE_APIBASE}/api/propiedades/activar/${verificacion.id}?activar=false`,
+                `${import.meta.env.VITE_APIBASE}/api/propiedades/verificacion/${verificacion.id}?activar=false`,
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },

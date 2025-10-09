@@ -11,8 +11,41 @@ import { SiMercadopago } from "react-icons/si";
 import { FaPaypal } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Link } from "react-router-dom";
+import { Client } from '@stomp/stompjs';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+// Une intervalos [start,end] inclusivos que se solapan o son contiguos
+function mergeIntervalsInclusive(list: Intervalo[]): Intervalo[] {
+    if (list.length <= 1) return list.slice().sort((a, b) => +a.start - +b.start);
+    const sorted = list.slice().sort((a, b) => +a.start - +b.start);
+    const res: Intervalo[] = [];
+    let cur = { ...sorted[0] };
+
+    for (let i = 1; i < sorted.length; i++) {
+        const nxt = sorted[i];
+        // solape o contiguos (cur.end+1día >= nxt.start)
+        const dayAfterCurEnd = addDaysUTC(cur.end, 1);
+        if (nxt.start <= dayAfterCurEnd) {
+            if (nxt.end > cur.end) cur.end = nxt.end;
+        } else {
+            res.push(cur);
+            cur = { ...nxt };
+        }
+    }
+    res.push(cur);
+    return res;
+}
+
+// Agrega un intervalo a excludeIntervals y fusiona
+function pushReservedInterval(
+    cur: Intervalo[],
+    nuevo: Intervalo
+): Intervalo[] {
+    return mergeIntervalsInclusive([...cur, nuevo]);
+}
+
 
 const parseDateOnlyUTC = (s: string) => {
     const [y, m, d] = s.split("-").map(Number);
@@ -53,6 +86,9 @@ const ReservarPropiedad = () => {
     const [excludeIntervals, setExcludeIntervals] = useState<Intervalo[]>([]);
     const [fechaDesde, setFechaDesde] = useState<Date | null>(null);
     const [fechaHasta, setFechaHasta] = useState<Date | null>(null);
+    const [stompClient, setStompClient] = useState<Client | null>(null);
+    const [conectado, setConectado] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     // ⬇️ Aviso inline
     const [mensajeFecha, setMensajeFecha] = useState<string | null>(null);
@@ -80,6 +116,8 @@ const ReservarPropiedad = () => {
         if (id) fetchPropiedad();
     }, [id]);
 
+
+
     useEffect(() => {
         const fetchFechasReservadas = async () => {
             try {
@@ -105,7 +143,72 @@ const ReservarPropiedad = () => {
             }
         };
         if (id) fetchFechasReservadas();
-    }, [id]);
+    }, [id])
+
+    useEffect(() => {
+        const cliente = new Client({
+            brokerURL: import.meta.env.VITE_WS_URL,
+            debug: (str) => {
+                console.log({ str })
+            },
+            reconnectDelay: 5000,
+
+            onConnect: () => {
+                console.log("Conectado al servidor")
+                setConectado(true)
+
+                cliente.subscribe("/topic/reservas/save", (message) => {
+                    try {
+                        const nuevaReserva = JSON.parse(message.body);
+
+                        // Si el payload trae otra forma de anidar, ajustá estas 2 líneas:
+                        const propId = nuevaReserva.propiedadId ?? nuevaReserva.propiedad?.id;
+                        const inicioS = nuevaReserva.fechaInicio; // "YYYY-MM-DD"
+                        const finS = nuevaReserva.fechaFin;    // inclusivo
+
+                        // Ignoro reservas de otras propiedades
+                        if (!id || String(propId) !== String(id)) return;
+
+                        // (opcional) Si tu backend emite estados, no bloquees hasta APROBADO
+                        // if (nuevaReserva.estado !== "APROBADO") return;
+
+                        const start = toUTCDate(parseDateOnlyUTC(inicioS));
+                        const end = toUTCDate(parseDateOnlyUTC(finS));
+                        const nuevo: Intervalo = { start, end };
+
+                        // Actualizo el estado fusionando intervalos
+                        setExcludeIntervals((prev) => pushReservedInterval(prev, nuevo));
+                    } catch (e) {
+                        console.error("Error parseando reserva WS:", e);
+                    }
+
+                })
+            },
+
+            onDisconnect: () => {
+                console.log("Desconectado del servidor")
+                setConectado(false)
+            },
+
+            onStompError: (frame) => {
+                console.error("Error Stromp:", frame)
+                setError("Error de conexion WebSocket")
+            }
+        })
+
+        cliente.activate()
+        setStompClient(cliente);
+
+        return () => {
+            if (cliente) {
+                try {
+                    cliente.deactivate();
+                } catch { }
+                setStompClient(null);
+
+            }
+        }
+    }, [id])
 
     // Limpio el aviso cuando cambian los intervalos o fechas de forma válida
     useEffect(() => {
@@ -225,28 +328,36 @@ const ReservarPropiedad = () => {
                 toast.error("Faltan datos de reserva.");
                 return;
             }
-            const res = await fetch(
-                `${import.meta.env.VITE_APIBASE}/api/mercadoPago/create-preference`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(reservacion),
-                }
-            );
-            if (!res.ok) {
-                const msg = await res.text().catch(() => "");
-                throw new Error(msg || `Error HTTP ${res.status}`);
+
+            if (reservacion.formaPago === FormaPago.MERCADO_PAGO) {
+
             }
-            const raw = await res.text();
-            try {
-                const json = JSON.parse(raw);
-                if (json?.init_point) {
-                    window.location.href = json.init_point;
-                    return;
+
+            if (reservacion.formaPago === FormaPago.PAYPAL) {
+                const res = await fetch(
+                    `${import.meta.env.VITE_APIBASE}/api/paypal/crearOrdenPago`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(reservacion),
+                    }
+                );
+                if (!res.ok) {
+                    const msg = await res.text().catch(() => "");
+                    throw new Error(msg || `Error HTTP ${res.status}`);
                 }
-            } catch {
-                window.location.href = raw;
+                const raw = await res.text();
+                try {
+                    const json = JSON.parse(raw);
+                    if (json?.init_point) {
+                        window.location.href = json.init_point;
+                        return;
+                    }
+                } catch {
+                    window.location.href = raw;
+                }
             }
+
         } catch {
             toast.error("No se pudo crear la preferencia.");
         }

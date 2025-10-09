@@ -1,22 +1,75 @@
 import { useEffect, useState } from "react";
 import { MdArrowForward } from "react-icons/md";
 import { Link } from "react-router-dom";
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import { set } from "date-fns";
 
 const PropiedadesVerificacion = () => {
     const [verificaciones, setVerificaciones] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [cargando, setCargando] = useState<boolean>(true);
+    const [stompClient, setStompClient] = useState<Client | null>(null);
+    const [conectado, setConectado] = useState<boolean>(false);
+    const [cargando, setCargando] = useState<boolean>(true)
 
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/aVerificar`)
-            .then((res) => {
-                if (!res.ok) throw new Error("Error en la respuesta");
-                return res.json();
-            })
-            .then((data) => setVerificaciones(data))
-            .catch((err) => setError(err.message))
-            .finally(() => setCargando(false));
+        const cargarVerificacionesIniciales = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/aVerificar`);
+                if (!res.ok) throw new Error("Error al cargar verificaciones");
+                const data = await res.json();
+                setVerificaciones(data);
+                setCargando(false)
+            } catch (err) {
+                console.error(err);
+                setCargando(false)
+            }
+        };
+
+        cargarVerificacionesIniciales();
     }, []);
+
+    useEffect(() => {
+        const cliente = new Client({
+            brokerURL: import.meta.env.VITE_WS_URL,
+            debug: (str) => {
+                console.log({ str })
+            },
+            reconnectDelay: 5000,
+
+            onConnect: () => {
+                console.log("Conectado al servidor")
+                setConectado(true)
+
+                cliente.subscribe("/topic/propiedades/save", (message) => {
+                    console.log("Nueva verificacion creada")
+                    const nuevaVerificacion = JSON.parse(message.body);
+                    setVerificaciones(prev => [...prev, nuevaVerificacion])
+                })
+            },
+
+            onDisconnect: () => {
+                console.log("Desconectado del servidor")
+                setConectado(false)
+            },
+
+            onStompError: (frame) => {
+                console.error("Error Stromp:", frame)
+                setError("Error de conexion WebSocket")
+            }
+        })
+
+        cliente.activate()
+        setStompClient(cliente);
+
+        return () => {
+            if (cliente) {
+                cliente.deactivate()
+            }
+        }
+
+    }, []);
+
 
     return (
         <div className="flex flex-col px-20 ">
@@ -50,7 +103,7 @@ const PropiedadesVerificacion = () => {
                             </div>
 
                             {principal ? (
-                                <img src={principal} alt={element?.nombre ?? "Propiedad"} className="w-40 h-28 object-cover rounded-md shrink-0" loading="lazy"/>
+                                <img src={principal} alt={element?.nombre ?? "Propiedad"} className="w-40 h-28 object-cover rounded-md shrink-0" loading="lazy" />
                             ) : (
                                 <div className="w-40 h-28 bg-gray-700/40 rounded-md grid place-items-center shrink-0">
                                     <span className="text-sm opacity-70">Sin imagen</span>

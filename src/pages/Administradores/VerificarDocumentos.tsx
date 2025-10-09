@@ -11,7 +11,6 @@ const VerificarDocumentos = () => {
     const { verificacion } = location.state as { verificacion: VerificacionClienteResponseDTO };
     const navigate = useNavigate();
 
-
     // en VerificarDocumentos.tsx
     const handleValido = async () => {
         try {

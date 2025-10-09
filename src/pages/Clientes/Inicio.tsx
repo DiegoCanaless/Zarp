@@ -7,10 +7,9 @@ import type { TipoPersonaResponseDTO } from "../../types/entities/tipoPersona/Ti
 import { CardPropiedad } from "../../components/ui/CardPropiedad";
 import { FiltrosModal, type SortOrder } from "../../components/ui/modals/FiltrosModal";
 import { ViajerosModal } from "../../components/ui/modals/ViajerosModal";
-import { useStompTopic } from "../../hooks/useStompTopic";
-import type { IMessage } from "@stomp/stompjs";
+import { Client } from "@stomp/stompjs";
 
-// ========= Helpers de texto/provincia =========
+// ========= Helpers =========
 const normalizeProvincia = (raw?: string) =>
   (raw ?? "").toLowerCase().trim().replaceAll("_", " ").replace(/\s+/g, " ");
 
@@ -35,24 +34,6 @@ const getPrecio = (p: PropiedadResponseDTO): number =>
 // ========= Tipos locales =========
 export type ViajerosSeleccion = Record<number, number>;
 
-// ========= Utils WS / estado =========
-const safeParse = <T,>(s: string): T | null => {
-  try {
-    return JSON.parse(s) as T;
-  } catch {
-    return null;
-  }
-};
-
-const pasaReglas = (prop: any) =>
-  prop?.activo === true &&
-  prop?.propietario?.activo === true &&
-  prop?.verificacionPropiedad === "APROBADA";
-
-// raíz del topic; asegurate que coincida con `entidadNombre()` del back:
-const TOPIC_ROOT = "/topic/propiedades";
-// si en tu back `entidadNombre()` devuelve "propiedad" (singular), usá "/topic/propiedad"
-
 export default function Inicio() {
   const [propiedades, setPropiedades] = useState<PropiedadResponseDTO[]>([]);
   const [search, setSearch] = useState<string>("");
@@ -61,7 +42,7 @@ export default function Inicio() {
   const [isFiltrosOpen, setIsFiltrosOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>("none");
 
-  // viajeros modal (dinámico)
+  // viajeros modal
   const [isViajerosOpen, setIsViajerosOpen] = useState(false);
   const [tiposPersona, setTiposPersona] = useState<TipoPersonaResponseDTO[]>([]);
   const [viajerosSel, setViajerosSel] = useState<ViajerosSeleccion>({});
@@ -70,31 +51,21 @@ export default function Inicio() {
   useEffect(() => {
     (async () => {
       try {
-        const rProps = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades`, {
+        // SOLO activas y verificadas
+        const rProps = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/activas`, {
           credentials: "include",
         });
         const data: PropiedadResponseDTO[] = await rProps.json();
-        const activasYAPROBADAS = data.filter((p: any) =>
-          p?.activo === true &&
-          p?.propietario?.activo === true &&
-          p?.verificacionPropiedad === "APROBADA"
-        );
-        setPropiedades(activasYAPROBADAS);
-      } catch (e) {
-        console.log("Error cargando propiedades:", e);
-      }
+        setPropiedades(data);
+      } catch { }
 
       try {
         const rTipos = await fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPersona`, {
           credentials: "include",
         });
         const tipos: TipoPersonaResponseDTO[] = await rTipos.json();
-
-        // 👇 quedate solo con los activos
         const activos = (tipos ?? []).filter((t) => t?.activo === true);
         setTiposPersona(activos);
-
-        // 👇 inicializa/depura el estado de viajeros solo con IDs activos
         setViajerosSel((prev) => {
           const next: ViajerosSeleccion = {};
           activos.forEach((t) => {
@@ -102,72 +73,61 @@ export default function Inicio() {
           });
           return next;
         });
-      } catch (e) {
-        console.log("Error cargando tiposPersona:", e);
-      }
+      } catch { }
     })();
   }, []);
 
-  // Mantener viajerosSel alineado a tiposPersona activos si cambian desde el back (altas/bajas)
+  // ===================== WebSocket (solo verificación/estado) =====================
+  useEffect(() => {
+    const cliente = new Client({
+      brokerURL: import.meta.env.VITE_WS_URL,
+      reconnectDelay: 5000,
+      onConnect: () => {
+        cliente.subscribe("/topic/propiedades/update", (message) => {
+          const prop: PropiedadResponseDTO = JSON.parse(message.body);
+
+          const ok =
+            (prop as any)?.activo === true &&
+            (prop as any)?.propietario?.activo === true &&
+            (prop as any)?.verificacionPropiedad === "APROBADA";
+
+          setPropiedades((prev) => {
+            const idx = prev.findIndex((p) => p.id === prop.id);
+            if (ok) {
+              if (idx >= 0) {
+                const copy = prev.slice();
+                copy[idx] = prop;
+                return copy;
+              }
+              return [...prev, prop];
+            } else {
+              if (idx >= 0) return prev.filter((p) => p.id !== prop.id);
+              return prev;
+            }
+          });
+        });
+      },
+    });
+
+    cliente.activate();
+    return () => cliente.deactivate();
+  }, []);
+
+  // Mantener viajerosSel alineado a tiposPersona activos si cambian
   useEffect(() => {
     const activosIds = new Set(tiposPersona.map((t) => t.id));
     setViajerosSel((prev) => {
       const next: ViajerosSeleccion = {};
-      // conservar solo claves activas
       Object.entries(prev).forEach(([k, v]) => {
         const id = Number(k);
         if (activosIds.has(id)) next[id] = v || 0;
       });
-      // asegurar que existan todas las claves activas (aunque sea en 0)
       tiposPersona.forEach((t) => {
         if (!(t.id in next)) next[t.id] = 0;
       });
       return next;
     });
   }, [tiposPersona]);
-
-  // ===================== Handlers WS =====================
-  const handleSave = (prop: PropiedadResponseDTO) => {
-    if (!pasaReglas(prop)) return;
-    setPropiedades((prev) => (prev.some((p) => p.id === prop.id) ? prev : [...prev, prop]));
-  };
-
-  const handleUpdate = (prop: PropiedadResponseDTO) => {
-    setPropiedades((prev) => {
-      if (!prop) return prev;
-      if (!pasaReglas(prop)) return prev.filter((p) => p.id !== prop.id);
-      const i = prev.findIndex((p) => p.id === prop.id);
-      if (i === -1) return [...prev, prop];
-      const next = prev.slice();
-      next[i] = prop;
-      return next;
-    });
-  };
-
-  const handleDelete = (body: { id?: number }) => {
-    const id = Number(body?.id);
-    if (!id) return;
-    setPropiedades((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  // ===================== Conexión WS (hook) =====================
-  useStompTopic({
-    wsBaseUrl: `${import.meta.env.VITE_APIBASE}/ws`,
-    topics: [`${TOPIC_ROOT}/save`, `${TOPIC_ROOT}/update`, `${TOPIC_ROOT}/delete`],
-    onMessage: (topic: string, msg: IMessage) => {
-      if (topic.endsWith("/delete")) {
-        const payload = safeParse<{ id?: number }>(msg.body);
-        if (payload?.id) handleDelete(payload);
-        return;
-      }
-      const prop = safeParse<PropiedadResponseDTO>(msg.body);
-      if (!prop) return;
-      if (topic.endsWith("/save")) handleSave(prop);
-      if (topic.endsWith("/update")) handleUpdate(prop);
-    },
-    heartbeatMs: 10000,
-    reconnectDelayMs: 5000,
-  });
 
   // ===================== Provincias derivadas y filtros =====================
   const provincias = useMemo(() => {
@@ -212,7 +172,7 @@ export default function Inicio() {
     };
   };
 
-  // ===================== Solo tipos activos para conteos/filtrado =====================
+  // ===================== Solo tipos activos =====================
   const tipoIdsActivos = useMemo(() => new Set(tiposPersona.map((t) => t.id)), [tiposPersona]);
 
   const viajerosSelActivos = useMemo(() => {
@@ -231,16 +191,14 @@ export default function Inicio() {
   const viajerosBadge = totalViajeros > 0 ? `${totalViajeros} viajeros` : "Viajeros";
 
   const aceptaViajeros = (prop: any) => {
-    // pedidos solo de tipos activos con cantidad > 0
     const pedidos = Object.entries(viajerosSelActivos).filter(([_, cant]) => (cant ?? 0) > 0);
     if (pedidos.length === 0) return true;
 
-    // capacidades solo de detalles activos + tipos activos
     const capacidades: Record<number, number> = {};
     (prop?.detalleTipoPersonas ?? []).forEach((d: any) => {
-      if (d?.activo === false) return; // ignorá detalle inactivo
+      if (d?.activo === false) return;
       const id = Number(d?.tipoPersona?.id);
-      if (!id || !tipoIdsActivos.has(id)) return; // ignorá tipo inactivo
+      if (!id || !tipoIdsActivos.has(id)) return;
       const cant = Number(d?.cantidad) || 0;
       capacidades[id] = (capacidades[id] || 0) + cant;
     });
@@ -340,7 +298,7 @@ export default function Inicio() {
                       key={prop.id ?? `${prov}-${prop.nombre}`}
                       propiedad={prop}
                       provincia={prov}
-                      onVerMas={(id) => console.log("Ver propiedad", id)}
+                      onVerMas={(id) => { }}
                     />
                   ))}
                 </div>
@@ -361,7 +319,7 @@ export default function Inicio() {
 
       <ViajerosModal
         open={isViajerosOpen}
-        tiposPersona={tiposPersona} // ya vienen filtrados activos
+        tiposPersona={tiposPersona}
         valores={viajerosSel}
         onClose={() => setIsViajerosOpen(false)}
         onChange={(next) => setViajerosSel(next)}

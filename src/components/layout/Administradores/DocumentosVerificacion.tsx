@@ -2,27 +2,80 @@ import { useEffect, useState } from "react";
 import { MdArrowForward } from "react-icons/md";
 import { VerificacionClienteResponseDTO } from "../../../types/entities/verificacionCliente/VerificacionClienteResponseDTO";
 import { Link } from "react-router-dom";
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import { set } from "date-fns";
 
 const DocumentosVerificacion = () => {
 
   const [verificaciones, setVerificaciones] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
+  const [stompClient, setStompClient] = useState<Client | null>(null);
+  const [conectado, setConectado] = useState<boolean>(false);
   const [cargando, setCargando] = useState<boolean>(true)
+
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_APIBASE}/api/verificacionClientes`).then((res) => {
-      if (!res.ok) throw new Error("Error en la respuesta");
-      return res.json();
-    })
-      .then((data: VerificacionClienteResponseDTO[]) => {
+    const cargarVerificacionesIniciales = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/verificacionClientes/activas");
+        if (!res.ok) throw new Error("Error al cargar verificaciones");
+        const data = await res.json();
         setVerificaciones(data);
-      })
-      .catch((error) => {
-        setError(error.message);
-      })
-      .finally(() => {
-        setCargando(false);
-      })
+        setCargando(false)
+      } catch (err) {
+        console.error(err);
+        setCargando(false)
+      }
+    };
+
+    cargarVerificacionesIniciales();
   }, []);
+
+
+  useEffect(() => {
+    const cliente = new Client({
+      brokerURL: import.meta.env.VITE_WS_URL,
+      debug: (str) => {
+        console.log({ str })
+      },
+      reconnectDelay: 5000,
+
+      onConnect: () => {
+        console.log("Conectado al servidor")
+        setConectado(true)
+
+        cliente.subscribe("/topic/verificacionClientes/save", (message) => {
+          console.log("Nueva verificacion creada")
+          const nuevaVerificacion = JSON.parse(message.body);
+          setVerificaciones(prev => [...prev, nuevaVerificacion])
+        })
+
+      },
+
+      onDisconnect: () => {
+        console.log("Desconectado del servidor")
+        setConectado(false)
+      },
+
+      onStompError: (frame) => {
+        console.error("Error Stromp:", frame)
+        setError("Error de conexion WebSocket")
+      }
+    })
+
+    cliente.activate()
+    setStompClient(cliente);
+
+    return () => {
+      if (cliente) {
+        cliente.deactivate()
+      }
+    }
+
+  }, []);
+
+
+
 
 
   return (
@@ -38,13 +91,13 @@ const DocumentosVerificacion = () => {
         )}
 
         {verificaciones
-        .filter((elemento) => elemento.activo === true)
-        .map((elemento) => (
-          <Link to="/VerificarDocumento" state={{ verificacion: elemento }} key={elemento.id} className="mb-5 w-full flex justify-between items-center h-12 rounded-lg text-white bg-tertiary">
-            <p className="ml-10">Verificacion de: {elemento.cliente.nombreCompleto}</p>
-            <MdArrowForward className="mr-10" size={22} />
-          </Link>
-        ))}
+          .filter((elemento) => elemento.activo === true)
+          .map((elemento) => (
+            <Link to="/VerificarDocumento" state={{ verificacion: elemento }} key={elemento.id} className="mb-5 w-full flex justify-between items-center h-12 rounded-lg text-white bg-tertiary">
+              <p className="ml-10">Verificacion de: {elemento.cliente.nombreCompleto}</p>
+              <MdArrowForward className="mr-10" size={22} />
+            </Link>
+          ))}
 
       </div>
 

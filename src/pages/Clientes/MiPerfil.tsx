@@ -7,7 +7,7 @@ import { ButtonSecondary } from "../../components/ui/buttons/ButtonSecondary";
 import { ButtonTertiary } from "../../components/ui/buttons/ButtonTertiary";
 
 // Iconos
-import { MdPriorityHigh } from "react-icons/md";
+import { MdClose, MdPriorityHigh } from "react-icons/md";
 import { AiOutlineClose } from "react-icons/ai";
 
 // React/Redux/Firebase
@@ -23,6 +23,8 @@ import { putCliente } from "../../helpers/putCliente";
 
 // ✅ Nuevo helper de Cloudinary desacoplado
 import { uploadImageCloudinary } from "../../helpers/cloudinary";
+import { ButtonPrimary } from "../../components/ui/buttons/ButtonPrimary";
+import { FaPaypal } from "react-icons/fa";
 
 // Función opcional para cache-busting visual (por si acaso)
 const noCache = (url?: string | null) =>
@@ -44,7 +46,27 @@ const MiPerfil = () => {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [revisando, setRevisando] = useState(false);
+  const [ModalPaypal, setModalPaypal] = useState(false);
+  const [paypalEmail, setPaypalEmail] = useState("");
+  const [paypalEmailRepeat, setPaypalEmailRepeat] = useState(""); // Nuevo estado
   const verificandoRef = useRef(false);
+
+  const emailsIguales = paypalEmail === paypalEmailRepeat;
+  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail);
+
+  const abrirModalPaypal = () => {
+    setModalPaypal(!ModalPaypal);
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setModalPaypal(false);
+    if (ModalPaypal) document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [ModalPaypal]);
+
+  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) setModalPaypal(false);
+  };
 
   // imagen persistida actual
   const [imagenPerfil, setImagenPerfil] = useState(
@@ -228,8 +250,6 @@ const MiPerfil = () => {
     }
   };
 
-
-
   const handleConectarMercadoPago = async () => {
     if (!user) return toast.error("No hay usuario autenticado.");
     if (!usuario?.id) return toast.error("No se encontró el id del cliente.");
@@ -263,6 +283,46 @@ const MiPerfil = () => {
         "No se pudo iniciar la conexión con Mercado Pago: " +
         (e?.message || "Error desconocido")
       );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!emailValido) {
+      toast.error("Ingresa un correo válido");
+      return;
+    }
+    if (!emailsIguales) {
+      toast.error("Los correos no coinciden");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_APIBASE}/api/paypal/guardarDireccionPaypal/${usuario.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+          },
+          body: paypalEmail.trim(),
+        }
+      );
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(msg || `HTTP ${res.status}`);
+      }
+
+      toast.success("Correo de PayPal guardado");
+      setModalPaypal(false);
+      setPaypalEmail("");
+      setPaypalEmailRepeat(""); // Limpiar campo repetir
+    } catch (err: any) {
+      toast.error(`No se pudo guardar el correo: ${err?.message || "Error"}`);
     } finally {
       setSaving(false);
     }
@@ -434,21 +494,18 @@ const MiPerfil = () => {
 
             {usuario.rol === "PROPIETARIO" && (
               <div className="flex flex-col items-center gap-3">
-                <button onClick={handleConectarMercadoPago} disabled={saving} className={`flex items-center justify-center gap-2 w-60 h-10 rounded-lg font-semibold text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 ${saving ? "bg-[#00aae4]/70 cursor-not-allowed" : "bg-[#00aae4] hover:bg-[#0095c8]" }`} >
+                <button onClick={handleConectarMercadoPago} disabled={saving} className={`flex items-center justify-center gap-2 w-60 h-10 rounded-lg font-semibold text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 ${saving ? "bg-[#00aae4]/70 cursor-not-allowed" : "bg-[#00aae4] hover:bg-[#0095c8]"}`} >
                   <img src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/6.7.2/mercadopago/logo__small.png" alt="Mercado Pago" className="w-5 h-5" />
                   {saving ? "Conectando..." : "Conectar con Mercado Pago"}
                 </button>
-                
-                <button disabled={saving} className={`flex items-center justify-center gap-2 w-60 h-10 rounded-lg font-semibold text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 ${saving ? "bg-[#0070BA]/70 cursor-not-allowed" : "bg-[#0070BA] hover:bg-[#005EA6]"}`}>
+
+                <button onClick={() => abrirModalPaypal()} disabled={saving} className={`flex items-center justify-center gap-2 w-60 h-10 rounded-lg font-semibold text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 ${saving ? "bg-[#0070BA]/70 cursor-not-allowed" : "bg-[#0070BA] hover:bg-[#005EA6]"}`}>
                   <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-5 h-5" />
                   {saving ? "Conectando..." : "Conectar con PayPal"}
                 </button>
               </div>
             )}
-
-
           </div>
-
         ) : (
           <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row sm:gap-10 ">
             <ButtonSecondary onClick={actualizarPerfil} text={saving ? "Guardando..." : "Guardar Cambios"} className="m-auto w-40" color="text-white" bgColor="bg-primary" maxWidth="max-w-[240px]" fontWeight="font-medium" fontSize="text-md" height="h-8" disabled={saving} />
@@ -490,6 +547,79 @@ const MiPerfil = () => {
           </div>
         </div>
       )}
+
+      {ModalPaypal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="paypal-title" onMouseDown={handleBackdrop} >
+          <div className="relative w-[min(560px,92vw)] rounded-2xl shadow-2xl ring-1 ring-white/10 bg-primary/95 text-white p-6 md:p-7 transition-all" onMouseDown={(e) => e.stopPropagation()} >
+            <button onClick={() => setModalPaypal(false)} className="absolute right-3 top-3 p-2 rounded-full hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40" aria-label="Cerrar modal" type="button" >
+              <MdClose size={20} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-white/10">
+                <FaPaypal size={24} />
+              </div>
+              <h3 id="paypal-title" className="text-xl font-semibold tracking-tight">Pagar con PayPal</h3>
+            </div>
+
+            <p className="text-white/80 text-sm mb-5">Ingresá el correo electrónico asociado a tu cuenta de PayPal.</p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <label htmlFor="paypal-email" className="block">
+                <span className="block text-sm mb-1">Correo electrónico</span>
+                <input
+                  id="paypal-email"
+                  type="email"
+                  value={paypalEmail}
+                  onChange={(e) => setPaypalEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="w-full rounded-lg bg-white text-black placeholder:text-black/50 px-3 py-2 outline-none ring-2 ring-transparent focus:ring-white/40"
+                  autoFocus
+                  required
+                />
+              </label>
+              <label htmlFor="paypal-email-repeat" className="block">
+                <span className="block text-sm mb-1">Repetir correo electrónico</span>
+                <input
+                  id="paypal-email-repeat"
+                  type="email"
+                  value={paypalEmailRepeat}
+                  onChange={(e) => setPaypalEmailRepeat(e.target.value)}
+                  placeholder="Repite tu correo"
+                  className="w-full rounded-lg bg-white text-black placeholder:text-black/50 px-3 py-2 outline-none ring-2 ring-transparent focus:ring-white/40"
+                  required
+                />
+              </label>
+
+              {paypalEmailRepeat.length > 0 && !emailsIguales && (
+                <p className="text-red-200 text-xs">Los correos no coinciden.</p>
+              )}
+              {!emailValido && paypalEmail.length > 0 && (
+                <p className="text-red-200 text-xs">Ingresá un correo válido.</p>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setModalPaypal(false)}
+                  className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                >
+                  Cancelar
+                </button>
+                <ButtonSecondary
+                  className={`cursor-pointer ${!emailValido || !emailsIguales ? "opacity-60 pointer-events-none" : ""}`}
+                  fontSize="text-md"
+                  text="Enviar"
+                  maxWidth="w-[120px]"
+                  onClick={handleSubmit as any}
+                  disabled={!emailValido || !emailsIguales}
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
