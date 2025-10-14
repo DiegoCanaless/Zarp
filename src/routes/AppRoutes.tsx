@@ -22,8 +22,8 @@ import Propiedad from '../pages/Clientes/Propiedad';
 import ReservarPropiedad from '../pages/Propietarios/ReservarPropiedad';
 import Reservas from '../pages/Propietarios/Reservas';
 import ReservacionesPropiedad from '../pages/Propietarios/ReservacionesPropiedad';
-import BandejaChats from '../pages/Clientes/BandejaChats';
-import Chat from '../pages/Clientes/Chat';
+import BandejaChats from '../pages/Propietarios/BandejaChats';
+import Chat from '../pages/Propietarios/Chat';
 
 
 
@@ -125,22 +125,11 @@ export default function AppRoutes() {
         }
         />
 
-        <Route
-          path="/Chat/new/:clienteId/:propietarioId"
-          element={
-            <RequireRole allowed={["PROPIETARIO"]}>
-              <Chat />
-            </RequireRole>
-          }
-        />
-
-        <Route
-          path="/Chat/:id"
-          element={
-            <RequireRole allowed={["PROPIETARIO"]}>
-              <Chat />
-            </RequireRole>
-          }
+        <Route path="/Chat/:id" element={
+          <RequireRole allowed={["PROPIETARIO"]}>
+            <Chat />
+          </RequireRole>
+        }
         />
 
 

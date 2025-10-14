@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { UsuarioHeader } from '../../components/layout/headers/UsuarioHeader'
 import { Footer } from '../../components/layout/Footer'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { ReservaResponseDTO } from '../../types/entities/reserva/ReservaResponseDTO';
 import toast from 'react-hot-toast';
 import { ButtonTertiary } from '../../components/ui/buttons/ButtonTertiary';
@@ -10,6 +10,8 @@ const ReservacionesPropiedad = () => {
     const [cargando, setCargando] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
     const [reservas, setReservas] = useState<ReservaResponseDTO[]>([])
+
+    const navigate = useNavigate()
 
 
 
@@ -49,6 +51,21 @@ const ReservacionesPropiedad = () => {
         }
     }, [id]);
 
+    const abrirChat = async (cliente1Id: number, cliente2Id: number) => {
+        try {
+            const url = `${import.meta.env.VITE_APIBASE}/api/conversaciones/existe-conversacion/${cliente1Id}/${cliente2Id}`;
+            const res = await fetch(url);
+            if (!res.ok) {
+                toast.error("No se pudo abrir la conversación");
+                return;
+            }
+            const conversacion = await res.json();
+            navigate(`/Chat/${conversacion.id}`);
+        } catch (e) {
+            toast.error("Error al abrir el chat");
+        }
+    };
+
 
     return (
         <>
@@ -76,8 +93,8 @@ const ReservacionesPropiedad = () => {
                                         </div>
 
                                         <div className="flex flex-col justify-end pr-2 gap-2">
+                                            <ButtonTertiary onClick={() => abrirChat(reserva.cliente.id, reserva.propiedad.propietario?.id)} className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
 
-                                            <ButtonTertiary className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                         </div>
                                     </div>
                                 </li>
@@ -101,14 +118,13 @@ const ReservacionesPropiedad = () => {
 
                                             <div className="flex flex-col justify-end pr-2 gap-2">
 
-                                                <ButtonTertiary className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                                <ButtonTertiary onClick={() => abrirChat(reserva.cliente.id, reserva.propiedad.propietario?.id)} className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                             </div>
                                         </div>
                                     </li>
                                 ))}
                         </ul>
-
-                    </div>
+                    </div>        
                 )}
             </main>
             <Footer />

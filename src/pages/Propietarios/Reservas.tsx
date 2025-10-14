@@ -96,7 +96,7 @@ const Reservas = () => {
 
     const [rating, setRating] = useState<number>(0);
     const [hover, setHover] = useState<number>(0);
-    
+
 
 
 
@@ -162,6 +162,22 @@ const Reservas = () => {
         }
     }, [usuario?.id]);
 
+
+    const abrirChat = async (cliente1Id: number, cliente2Id: number) => {
+        try {
+            const url = `${import.meta.env.VITE_APIBASE}/api/conversaciones/existe-conversacion/${cliente1Id}/${cliente2Id}`;
+            const res = await fetch(url);
+            if (!res.ok) {
+                toast.error("No se pudo abrir la conversación");
+                return;
+            }
+            const conversacion = await res.json();
+            navigate(`/Chat/${conversacion.id}`);
+        } catch (e) {
+            toast.error("Error al abrir el chat");
+        }
+    };
+
     return (
         <>
             <UsuarioHeader />
@@ -188,7 +204,7 @@ const Reservas = () => {
                                         </div>
 
                                         <div className="flex flex-col justify-end pr-2 gap-2">
-                                            <ButtonTertiary onClick={() => navigate(`/Chat/new/${usuario.id}/${reserva.propiedad.propietario?.id}`)} className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                            <ButtonTertiary onClick={() => abrirChat(usuario.id, reserva.propiedad.propietario?.id)} className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                             <ButtonTertiary onClick={() => abrirPuntuacion(reserva)} className="cursor-pointer" bgColor="bg-red-700" text="Ver Mas" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                         </div>
                                     </div>
@@ -211,7 +227,7 @@ const Reservas = () => {
                                             </div>
 
                                             <div className="flex flex-col justify-end pr-2 gap-2">
-                                                <ButtonTertiary onClick={() => navigate(`/Chat/new/${usuario.id}/${reserva.propiedad.propietario?.id}`)} className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
+                                                <ButtonTertiary onClick={() => abrirChat(usuario.id, reserva.propiedad.propietario?.id)} className="cursor-pointer" text="Abrir Chat" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                                 <ButtonTertiary onClick={() => abrirPuntuacion(reserva)} className="cursor-pointer" bgColor="bg-red-700" text="Ver Mas" color="white" maxWidth="w-[70px]" fontSize="text-xs" />
                                             </div>
                                         </div>
