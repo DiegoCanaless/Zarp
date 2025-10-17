@@ -77,6 +77,9 @@ const Chat = () => {
         })
       })
 
+      setMensaje("")
+
+
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
@@ -162,12 +165,16 @@ const Chat = () => {
         ) : error || !conversacion ? (
           <div>No se pudo cargar la conversación.</div>
         ) : (
-          <div className="flex flex-col items-center gap-5">
-            <div className="fixed top-15 left-0 bg-primary w-full h-15 px-5 flex items-center gap-3">
+          <div className="flex flex-col items-center gap-5 lg:px-30">
+            <div className="fixed top-15 z-10 left-0 bg-primary w-full h-15 px-5 flex items-center gap-3">
               <img src={conversacion.cliente1.id === usuario.id ? conversacion.cliente2.fotoPerfil?.urlImagen : conversacion.cliente1.fotoPerfil?.urlImagen} className="w-10 h-10" alt="" />
               <h1 className="text-lg font-bold">{conversacion.cliente1.id === usuario.id ? conversacion.cliente2.nombreCompleto : conversacion.cliente1.nombreCompleto}</h1>
             </div>
-            <ul ref={mensajesRef} className="w-full pt-18 flex flex-col gap-3 px-4 overflow-y-auto  max-h-[calc(100vh-150px)]">
+            <ul
+              ref={mensajesRef}
+              className="w-full pt-18 flex flex-col gap-3 px-4 overflow-y-auto overflow-x-hidden chat-scroll max-h-[calc(100vh-150px)]"
+              style={{ paddingRight: 12 }}
+            >
               {conversacion.mensajes.map((msg) => {
                 const esMio = msg.emisor?.id === usuario.id;
                 return (
@@ -176,17 +183,15 @@ const Chat = () => {
                       <img src={msg.emisor?.fotoPerfil?.urlImagen} className="w-9 h-9 rounded-full object-cover shadow" alt={msg.emisor?.nombreCompleto} />
                     )}
 
-                    <div className={`max-w-xs md:max-w-sm lg:max-w-md min-w-[70px]flex flex-col ${esMio ? "items-end" : "items-start"}`}>
+                    <div className={`max-w-xs md:max-w-sm lg:max-w-md min-w-[70px] flex flex-col ${esMio ? "items-end" : "items-start"}`}>
                       {!esMio && (
                         <span className="text-xs text-gray-400 ml-1 mb-1">{msg.emisor?.nombreCompleto}</span>
                       )}
-                      <p className={`px-4 py-2 rounded-2xl shadow-md break-words font-medium
-                          ${esMio
-                            ? "bg-tertiary text-white rounded-br-sm border border-tertiary"
-                            : "bg-primary/80 text-white rounded-bl-sm border border-primary/40"
-                          }
-                          hover:scale-[1.02] transition-all
-                        `}>
+                      <p className={`
+              px-4 py-2 rounded-2xl shadow-md break-words font-medium
+              ${esMio ? "bg-tertiary text-white rounded-br-sm border border-tertiary" : "bg-primary/80 text-white rounded-bl-sm border border-primary/40"}
+              hover:shadow-xl transition-transform
+            `}>
                         {msg.contenido}
                       </p>
                     </div>
@@ -198,6 +203,7 @@ const Chat = () => {
                 );
               })}
             </ul>
+
           </div>
 
         )}

@@ -4,35 +4,35 @@
 
 @theme {
 
-    /* Colores Web */
-    --color-primary: #111C1F;
-    --color-secondary: #223F47; 
-    --color-tertiary: #376572;
+  /* Colores Web */
+  --color-primary: #111C1F;
+  --color-secondary: #223F47;
+  --color-tertiary: #376572;
 
-    /* Colores Buttons */
-    --color-buttonImportant: #CC2936; 
-    --color-buttonSecondary: #E2DBBE;
+  /* Colores Buttons */
+  --color-buttonImportant: #CC2936;
+  --color-buttonSecondary: #E2DBBE;
 
-    /* Fuentes */
-    --font-Primary: "Rubik" san-serif;
-    --font-Secondary: "Archivo", sans-serif;
-    --font-Tertiary: "Bowlby One SC", sans-serif;
+  /* Fuentes */
+  --font-Primary: "Rubik" san-serif;
+  --font-Secondary: "Archivo", sans-serif;
+  --font-Tertiary: "Bowlby One SC", sans-serif;
 
 }
 
 body {
-    font-family: "Rubik", sans-serif;
-    font-weight: 400;
-    font-size: 0.9rem;
-    box-sizing: border-box;
-    margin: 0px;
-    padding: 0px;
+  font-family: "Rubik", sans-serif;
+  font-weight: 400;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
 
 }
 
 
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 
 }
 
@@ -45,4 +45,50 @@ html {
 
 .no-clear-button {
   -moz-appearance: textfield;
+}
+
+/* Clase aplicada al ul: .chat-scroll */
+.chat-scroll {
+  /* Firefox: */
+  scrollbar-width: thin;
+  /* or 'auto' */
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+/* Webkit (Chrome, Edge, Safari) */
+.chat-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  /* casi invisible por defecto */
+  border-radius: 8px;
+  transition: background 150ms;
+  border: 2px solid transparent;
+  /* para efecto 'flotante' */
+}
+
+.chat-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  /* más visible al hover del contenedor */
+}
+
+/* Si querés que también cambie en Firefox al hover del contenedor (no perfecto):
+   .chat-scroll:hover { scrollbar-color: rgba(255,255,255,0.18) transparent; } */
+
+/* Quitar esquina del scrollbar */
+.chat-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Evitar que el hover del bubble genere overflow: forzamos el recorte de transform */
+.chat-scroll li {
+  will-change: transform;
+  transform-origin: center right;
 }
