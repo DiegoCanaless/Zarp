@@ -8,7 +8,6 @@ import type { DireccionDTO } from "../direccion/DireccionDTO";
 export interface PropiedadDTO {
   nombre: string;
   descripcion: string;
-
   precioPorNoche: number;
   direccion: DireccionDTO;
   propietarioId: number;

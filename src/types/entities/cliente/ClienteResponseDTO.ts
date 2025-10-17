@@ -1,3 +1,5 @@
+import type { AutorizacionesCliente } from "../../enums/AutorizacionesCliente";
+import type { Rol } from "../../enums/Rol";
 import type { ImagenResponseDTO } from "../imagen/ImagenResponseDTO";
 
 export interface ClienteResponseDTO {
@@ -6,8 +8,9 @@ export interface ClienteResponseDTO {
   uid: string;
   nombreCompleto: string;
   correoElectronico: string;
-  rol: string | null;
+  rol: Rol;
   correoVerificado: boolean;
   documentoVerificado: boolean;
   fotoPerfil: ImagenResponseDTO | null;
+  autorizaciones: AutorizacionesCliente;
 }

@@ -13,7 +13,7 @@ export interface PropiedadResponseDTO {
   activo: boolean;
   nombre: string;
   descripcion: string;
-  propietario?: ClienteResponseDTO; // si decidís incluirlo
+  propietario: ClienteResponseDTO; 
   precioPorNoche: number;
   verificacionPropiedad: VerificacionPropiedad;
   direccion: DireccionResponseDTO;
