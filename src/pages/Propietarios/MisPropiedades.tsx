@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import { ButtonTertiary } from '../../components/ui/buttons/ButtonTertiary'
 import toast from "react-hot-toast";
 import { Client, IMessage } from '@stomp/stompjs'
+import { AutorizacionesCliente } from '../../types/enums/AutorizacionesCliente'
 
 const MisPropiedades = () => {
     const [opcion, setOpcion] = useState<boolean>(true)
@@ -47,8 +48,8 @@ const MisPropiedades = () => {
         if (usuario?.id) obtenerPropiedades()
     }, [usuario?.id])
 
-    
-    
+
+
 
 
 
@@ -78,6 +79,16 @@ const MisPropiedades = () => {
         }
     }
 
+    const handleCrearPropiedad = () => {
+        if (usuario.autorizaciones === AutorizacionesCliente.NINGUNA) {
+            toast.error("No tienes un método de pago vinculado. Por favor conecta Mercado Pago o PayPal.",
+                { duration: 2500 })
+
+            return
+        }
+        navigate("/crearPropiedad")
+    }
+
     return (
         <>
             <UsuarioHeader />
@@ -86,7 +97,7 @@ const MisPropiedades = () => {
                 <div className='flex flex-col justify-center mb-5 '>
                     <div className='flex items-center justify-between mb-10'>
                         <h1 className='text-xl font-medium mb-2 md:text-3xl'>Propiedades</h1>
-                        <MdAdd onClick={() => navigate("/CrearPropiedad")} color='black' className='bg-white rounded-full cursor-pointer' size={30} title='Crear propiedad' />
+                        <MdAdd onClick={handleCrearPropiedad} color='black' className='bg-white rounded-full cursor-pointer' size={30} title='Crear propiedad' />
                     </div>
 
                     <div className='flex gap-2'>

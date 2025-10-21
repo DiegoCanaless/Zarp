@@ -7,13 +7,14 @@ import { useState, type JSX } from "react";
 // Icons
 import { AiOutlineClose } from "react-icons/ai";
 import { FaHouseChimney, FaXTwitter, FaInstagram } from "react-icons/fa6";
-import { MdEmail, MdAddHomeWork, MdOutlineMail, MdLogout, MdHolidayVillage, MdOutlineContactMail, MdListAlt, MdGroup, MdOutlineSettings } from "react-icons/md";
+import { MdEmail, MdAddHomeWork, MdOutlineMail, MdLogout, MdHolidayVillage, MdOutlineContactMail, MdListAlt, MdGroup, MdOutlineSettings, MdOutlinePayments } from "react-icons/md";
 import { CiFacebook } from "react-icons/ci";
 
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, selectIsAuthenticated, selectUserRol } from '../../../reducer/user/userSlice';
 import { getRoleHome } from "../../../helpers/getRoleHome";
 import toast from "react-hot-toast";
+import { AutorizacionesCliente } from "../../../types/enums/AutorizacionesCliente";
 
 type NavItem = {
     title: string;
@@ -59,6 +60,7 @@ export const UsuarioHeader = () => {
     const linksAdmin: NavItem[] = [
         { title: "Verificaciones", url: "/VerificacionesAdmin", icon: <MdOutlineContactMail color="white" fontSize={25} className="cursor-pointer mr-5" /> },
         { title: "Listas", url: "/Listas", icon: <MdListAlt color="white" fontSize={25} className="cursor-pointer mr-5" /> },
+        { title: "Pagos", url: "/PagosPendientes", icon: <MdOutlinePayments color="white" fontSize={25} className="cursor-pointer mr-5"/>},
         { title: "Cerrar Sesion", onClick: handleLogout, icon: <MdLogout color="white" fontSize={25} className="cursor-pointer mr-5" /> },
     ];
 
@@ -77,6 +79,15 @@ export const UsuarioHeader = () => {
             ...linksAdmin,
         ]
     };
+    const handleCrearPropiedad = () => {
+        if( usuario.autorizaciones === AutorizacionesCliente.NINGUNA){
+            toast.error("No tienes un método de pago vinculado. Por favor conecta Mercado Pago o PayPal.",
+            { duration: 2500 })
+
+            return
+        }
+        navigate("/crearPropiedad")
+    }
 
     const navLinks = navbarLinksByRole[role] || [];
 
@@ -99,9 +110,7 @@ export const UsuarioHeader = () => {
                     {usuario.rol === "CLIENTE" ? (
                         <ButtonPrimary text="Convertirse en Propietario" maxWidth="max-w-[190px]" className="cursor-pointer px-2" onClick={alerta} />
                     ) : usuario.rol === "PROPIETARIO" && usuario.propiedades.length === 0 ? (
-                        <Link to="/crearPropiedad">
-                            <ButtonPrimary text="Convertirse en Propietario" maxWidth="max-w-[190px]" className="cursor-pointer px-2"/>
-                        </Link>
+                        <ButtonPrimary text="Convertirse en Propietario" maxWidth="max-w-[190px]" onClick={handleCrearPropiedad} className="cursor-pointer px-2"/>
                     ) : null}
 
                     <ImUser onClick={abrirNav} color="white" fontSize={25} className="cursor-pointer md:ml-5" />

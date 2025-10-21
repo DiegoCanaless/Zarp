@@ -86,6 +86,21 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
       }
     }
 
+    // Opcional: log para debug del payload que mandás al redux
+    console.log("payload setUser (login):", {
+      id: resp.id,
+      uid: resp.uid,
+      fullname: resp.nombreCompleto ?? fallback.nombre,
+      email: resp.correoElectronico ?? fallback.email,
+      token: fallback.token,
+      photoURL: photoURLSafe,
+      AuthenticatedEmail: resp.correoVerificado ?? fallback.emailVerified,
+      AuthenticatedDocs: resp.documentoVerificado ?? false,
+      rol: resp.rol ?? "CLIENTE",
+      autorizaciones: resp.autorizaciones, // <-- importante
+      propiedades,
+    });
+
     dispatch(
       setUser({
         id: resp.id,
@@ -97,6 +112,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
         AuthenticatedEmail: resp.correoVerificado ?? fallback.emailVerified,
         AuthenticatedDocs: resp.documentoVerificado ?? false,
         rol: resp.rol ?? "CLIENTE",
+        autorizaciones: resp.autorizaciones, // <-- enviamos SOLO autorizaciones
         propiedades,
       })
     );

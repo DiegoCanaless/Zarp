@@ -25,6 +25,7 @@ import { putCliente } from "../../helpers/putCliente";
 import { uploadImageCloudinary } from "../../helpers/cloudinary";
 import { ButtonPrimary } from "../../components/ui/buttons/ButtonPrimary";
 import { FaPaypal } from "react-icons/fa";
+import { AutorizacionesCliente } from "../../types/enums/AutorizacionesCliente";
 
 // Función opcional para cache-busting visual (por si acaso)
 const noCache = (url?: string | null) =>
@@ -325,6 +326,16 @@ const MiPerfil = () => {
         toast.error(msg);
         return;
       }
+      dispatch(
+        setUser({
+          ...usuario,
+          autorizaciones:
+            usuario.autorizaciones === AutorizacionesCliente.MERCADO_PAGO
+              ? AutorizacionesCliente.AMBAS
+              : AutorizacionesCliente.PAYPAL,
+        })
+      );
+
 
       toast.success("Correo de PayPal guardado");
       setModalPaypal(false);
@@ -504,15 +515,21 @@ const MiPerfil = () => {
 
             {usuario.rol === "PROPIETARIO" && (
               <div className="flex flex-col items-center gap-3">
-                <button onClick={handleConectarMercadoPago} disabled={saving} className={`flex items-center justify-center gap-2 w-60 h-10 rounded-lg font-semibold text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 ${saving ? "bg-[#00aae4]/70 cursor-not-allowed" : "bg-[#00aae4] hover:bg-[#0095c8]"}`} >
+                {usuario.autorizaciones === AutorizacionesCliente.MERCADO_PAGO || usuario.AutorizacionesCliente === AutorizacionesCliente.AMBAS && (
+                  <button onClick={handleConectarMercadoPago} disabled={saving} className={`flex items-center justify-center gap-2 w-60 h-10 rounded-lg font-semibold text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 ${saving ? "bg-[#00aae4]/70 cursor-not-allowed" : "bg-[#00aae4] hover:bg-[#0095c8]"}`} >
                   <img src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/6.7.2/mercadopago/logo__small.png" alt="Mercado Pago" className="w-5 h-5" />
                   {saving ? "Conectando..." : "Conectar con Mercado Pago"}
                 </button>
+                )}
+                
 
-                <button onClick={() => abrirModalPaypal()} disabled={saving} className={`flex items-center justify-center gap-2 w-60 h-10 rounded-lg font-semibold text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 ${saving ? "bg-[#0070BA]/70 cursor-not-allowed" : "bg-[#0070BA] hover:bg-[#005EA6]"}`}>
-                  <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-5 h-5" />
-                  {saving ? "Conectando..." : "Conectar con PayPal"}
-                </button>
+                {usuario.autorizaciones === AutorizacionesCliente.PAYPAL || usuario.autorizaciones === AutorizacionesCliente.AMBAS && (
+                  <button onClick={() => abrirModalPaypal()} disabled={saving} className={`flex items-center justify-center gap-2 w-60 h-10 rounded-lg font-semibold text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 ${saving ? "bg-[#0070BA]/70 cursor-not-allowed" : "bg-[#0070BA] hover:bg-[#005EA6]"}`}>
+                    <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-5 h-5" />
+                    {saving ? "Conectando..." : "Conectar con PayPal"}
+                  </button>
+                )}
+
               </div>
             )}
           </div>

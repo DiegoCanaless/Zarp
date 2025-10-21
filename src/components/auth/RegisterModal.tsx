@@ -73,6 +73,20 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
 
       const clienteResp = await ensureClienteStrict(cliente);
 
+      // Opcional: logueá el payload para debug (borralo en prod)
+      console.log("payload setUser (google register):", {
+        id: clienteResp.id ?? null,
+        uid: clienteResp.uid ?? uid,
+        fullname: clienteResp.nombreCompleto ?? nombre,
+        email: clienteResp.correoElectronico ?? email,
+        token,
+        photoURL: clienteResp.fotoPerfil?.urlImagen ?? foto,
+        AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
+        AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
+        rol: clienteResp.rol ?? "CLIENTE",
+        autorizaciones: clienteResp.autorizaciones, // <-- importante
+      });
+
       dispatch(
         setUser({
           id: clienteResp.id ?? null,
@@ -83,7 +97,8 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
           photoURL: clienteResp.fotoPerfil?.urlImagen ?? foto,
           AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
           AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
-          rol: clienteResp.rol ?? "CLIENTE",           // 👈 AÑADIR
+          rol: clienteResp.rol ?? "CLIENTE",
+          autorizaciones: clienteResp.autorizaciones, // <-- enviamos SOLO autorizaciones
         })
       );
 
@@ -170,6 +185,21 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                   }
                 }
 
+                // Opcional: log para debug del payload que mandás al redux
+                console.log("payload setUser (email register):", {
+                  id: clienteResp.id ?? null,
+                  uid: clienteResp.uid ?? uid,
+                  fullname: clienteResp.nombreCompleto ?? nombre,
+                  email: clienteResp.correoElectronico ?? email,
+                  token,
+                  photoURL: photoURLSafe,
+                  AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
+                  AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
+                  rol: clienteResp.rol ?? "CLIENTE",
+                  autorizaciones: clienteResp.autorizaciones, // <-- importante
+                  propiedades,
+                });
+
                 dispatch(
                   setUser({
                     id: clienteResp.id ?? null,
@@ -181,6 +211,7 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                     AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
                     AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
                     rol: clienteResp.rol ?? "CLIENTE",
+                    autorizaciones: clienteResp.autorizaciones, // <-- enviamos SOLO autorizaciones
                     propiedades,
                   })
                 );

@@ -217,11 +217,6 @@ const BandejaChats = () => {
                     )}
 
                 </ul>
-
-                {/* Indicador de estado WS (opcional) */}
-                <div className="fixed bottom-2 right-2 px-3 py-1 rounded-md text-xs bg-black/30 text-white">
-                    {conectado ? "WS: Conectado" : "WS: Desconectado"}
-                </div>
             </main>
             <Footer />
         </>

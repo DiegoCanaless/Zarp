@@ -14,6 +14,7 @@ const Welcome = () => {
     const links = [
         { text: "Verificaciones", url: "/VerificacionesAdmin" },
         { text: "Listas", url: "/Listas" },
+        { text: "Pagos" , url: "/PagosPendientes"}
     ]
 
     return (
