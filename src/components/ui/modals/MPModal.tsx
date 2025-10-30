@@ -29,7 +29,6 @@ const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
         if (e.target === e.currentTarget) onClose();
     };
 
-    // En Argentina CVU son 22 dígitos. Ajustá si necesitas otro formato.
     const cvuValido = /^\d{22}$/.test(cvu);
     const titularValido = titular.trim().length >= 3;
 
@@ -48,7 +47,7 @@ const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
 
             // Ajustá endpoint según tu backend
             const res = await fetch(
-                `${import.meta.env.VITE_APIBASE}/api/mercadopago/guardarCuenta/${usuario.id}`,
+                `${import.meta.env.VITE_APIBASE}/api/mercadoPago/guardarCredenciales/${usuario.id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -57,7 +56,7 @@ const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
                     },
                     body: JSON.stringify({
                         cvu: cvu.trim(),
-                        titular: titular.trim(),
+                        nombreTitular: titular.trim(),
                     }),
                 }
             );
@@ -111,7 +110,7 @@ const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
                     <MdClose size={20} />
                 </button>
 
-                <h3 id="mp-title" className="text-xl font-semibold mb-3">Vincular cuenta Bancaria / CVU (Mercado Pago)</h3>
+                <h3 id="mp-title" className="text-xl font-semibold mb-3">Vincular cuenta Bancaria / CVU</h3>
                 <p className="text-white/80 text-sm mb-4">Ingresá el CVU de tu cuenta y el nombre del titular.</p>
 
                 <form onSubmit={(e) => handleSubmit(e)} className="space-y-4">

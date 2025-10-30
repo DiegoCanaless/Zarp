@@ -25,6 +25,7 @@ import ReservacionesPropiedad from '../pages/Propietarios/ReservacionesPropiedad
 import BandejaChats from '../pages/Propietarios/BandejaChats';
 import Chat from '../pages/Propietarios/Chat';
 import PagosPendientes from '../pages/Administradores/PagosPendientes';
+import TransaccionFinal from '../pages/Administradores/TransaccionFinal';
 
 
 
@@ -177,6 +178,13 @@ export default function AppRoutes() {
         <Route path='/PagosPendientes' element={
           <RequireRole allowed={["SUPERADMIN", "EMPLEADO"]} >
             <PagosPendientes />
+          </RequireRole>
+        }
+        />
+
+        <Route path='/TransaccionFinal/:id' element={
+          <RequireRole allowed={["SUPERADMIN", "EMPLEADO"]} >
+            <TransaccionFinal />
           </RequireRole>
         }
         />

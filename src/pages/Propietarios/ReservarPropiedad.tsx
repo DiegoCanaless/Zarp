@@ -13,10 +13,10 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
 import { Client } from '@stomp/stompjs';
+import { AutorizacionesCliente } from "../../types/enums/AutorizacionesCliente";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-// Une intervalos [start,end] inclusivos que se solapan o son contiguos
 function mergeIntervalsInclusive(list: Intervalo[]): Intervalo[] {
     if (list.length <= 1) return list.slice().sort((a, b) => +a.start - +b.start);
     const sorted = list.slice().sort((a, b) => +a.start - +b.start);
@@ -25,7 +25,6 @@ function mergeIntervalsInclusive(list: Intervalo[]): Intervalo[] {
 
     for (let i = 1; i < sorted.length; i++) {
         const nxt = sorted[i];
-        // solape o contiguos (cur.end+1día >= nxt.start)
         const dayAfterCurEnd = addDaysUTC(cur.end, 1);
         if (nxt.start <= dayAfterCurEnd) {
             if (nxt.end > cur.end) cur.end = nxt.end;
@@ -38,7 +37,6 @@ function mergeIntervalsInclusive(list: Intervalo[]): Intervalo[] {
     return res;
 }
 
-// Agrega un intervalo a excludeIntervals y fusiona
 function pushReservedInterval(
     cur: Intervalo[],
     nuevo: Intervalo
@@ -90,12 +88,9 @@ const ReservarPropiedad = () => {
     const [conectado, setConectado] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // ⬇️ Aviso inline
     const [mensajeFecha, setMensajeFecha] = useState<string | null>(null);
     const setAviso = useCallback((msg: string) => {
         setMensajeFecha(msg);
-        // Si además querés un toast, descomentá:
-        // toast.error(msg);
     }, []);
 
     const usuario = useSelector((state: any) => state.user);
@@ -130,7 +125,6 @@ const ReservarPropiedad = () => {
                 }
                 const data = await res.json();
 
-                // Tu backend entrega fechaFin inclusiva (según tu última versión)
                 const intervals: Intervalo[] = data.map((r: any) => {
                     const start = toUTCDate(parseDateOnlyUTC(r.fechaInicio));
                     const endInclusive = toUTCDate(parseDateOnlyUTC(r.fechaFin));
@@ -161,22 +155,16 @@ const ReservarPropiedad = () => {
                     try {
                         const nuevaReserva = JSON.parse(message.body);
 
-                        // Si el payload trae otra forma de anidar, ajustá estas 2 líneas:
                         const propId = nuevaReserva.propiedadId ?? nuevaReserva.propiedad?.id;
-                        const inicioS = nuevaReserva.fechaInicio; // "YYYY-MM-DD"
-                        const finS = nuevaReserva.fechaFin;    // inclusivo
+                        const inicioS = nuevaReserva.fechaInicio;
+                        const finS = nuevaReserva.fechaFin;
 
-                        // Ignoro reservas de otras propiedades
                         if (!id || String(propId) !== String(id)) return;
-
-                        // (opcional) Si tu backend emite estados, no bloquees hasta APROBADO
-                        // if (nuevaReserva.estado !== "APROBADO") return;
 
                         const start = toUTCDate(parseDateOnlyUTC(inicioS));
                         const end = toUTCDate(parseDateOnlyUTC(finS));
                         const nuevo: Intervalo = { start, end };
 
-                        // Actualizo el estado fusionando intervalos
                         setExcludeIntervals((prev) => pushReservedInterval(prev, nuevo));
                     } catch (e) {
                         console.error("Error parseando reserva WS:", e);
@@ -210,9 +198,7 @@ const ReservarPropiedad = () => {
         }
     }, [id])
 
-    // Limpio el aviso cuando cambian los intervalos o fechas de forma válida
     useEffect(() => {
-        // si tenías un mensaje viejo y el usuario cambia algo, lo saco para no confundir
         setMensajeFecha(null);
     }, [excludeIntervals]);
 
@@ -330,7 +316,30 @@ const ReservarPropiedad = () => {
             }
 
             if (reservacion.formaPago === FormaPago.MERCADO_PAGO) {
+                const res = await fetch(
+                    `${import.meta.env.VITE_APIBASE}/api/mercadoPago/create-preference`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(reservacion),
+                    }
+                );
 
+                if (!res.ok) {
+                    const msg = await res.text().catch(() => "");
+                    throw new Error(msg || `Error HTTP ${res.status}`);
+                }
+
+                // El backend devuelve directamente el init_point como string
+                const initPoint = await res.text();
+
+                if (initPoint) {
+                    // Redirigir al checkout de Mercado Pago
+                    window.location.href = initPoint;
+                    return;
+                }
+
+                throw new Error("No se recibió el link de pago");
             }
 
             if (reservacion.formaPago === FormaPago.PAYPAL) {
@@ -342,10 +351,12 @@ const ReservarPropiedad = () => {
                         body: JSON.stringify(reservacion),
                     }
                 );
+
                 if (!res.ok) {
                     const msg = await res.text().catch(() => "");
                     throw new Error(msg || `Error HTTP ${res.status}`);
                 }
+
                 const raw = await res.text();
                 try {
                     const json = JSON.parse(raw);
@@ -358,8 +369,9 @@ const ReservarPropiedad = () => {
                 }
             }
 
-        } catch {
-            toast.error("No se pudo crear la preferencia.");
+        } catch (error: any) {
+            console.error("Error al crear la preferencia:", error);
+            toast.error(error?.message || "No se pudo crear la preferencia de pago.");
         }
     };
 
@@ -443,43 +455,54 @@ const ReservarPropiedad = () => {
 
                             <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-5 sm:p-6">
                                 <h3 className="text-lg font-semibold mb-4">Método de pago</h3>
+
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <button
-                                        type="button"
-                                        aria-pressed={formaPago === FormaPago.MERCADO_PAGO}
-                                        onClick={() => setFormaPago(FormaPago.MERCADO_PAGO)}
-                                        className={`group rounded-2xl border p-4 transition flex items-center gap-3 ${formaPago === FormaPago.MERCADO_PAGO
-                                            ? "border-[#009ee3]/60 bg-[#009ee3]/10 ring-2 ring-[#009ee3]/40"
-                                            : "border-white/10 bg-zinc-800/30 hover:bg-zinc-800/50"
-                                            }`}
-                                    >
-                                        <div className="rounded-xl bg-white p-2">
-                                            <SiMercadopago className="text-[#009ee3]" size={28} />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="font-medium">Mercado Pago</p>
-                                            <p className="text-sm text-zinc-400">Tarjeta, débito o billetera</p>
-                                        </div>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        aria-pressed={formaPago === FormaPago.PAYPAL}
-                                        onClick={() => setFormaPago(FormaPago.PAYPAL)}
-                                        className={`group rounded-2xl border p-4 transition flex items-center gap-3 ${formaPago === FormaPago.PAYPAL
-                                            ? "border-[#003087]/60 bg-[#003087]/10 ring-2 ring-[#003087]/40"
-                                            : "border-white/10 bg-zinc-800/30 hover:bg-zinc-800/50"
-                                            }`}
-                                    >
-                                        <div className="rounded-xl bg-white p-2">
-                                            <FaPaypal size={28} />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="font-medium">PayPal</p>
-                                            <p className="text-sm text-zinc-400">Pago internacional</p>
-                                        </div>
-                                    </button>
+                                    {/* MERCADO PAGO */}
+                                    {(propiedad?.propietario.autorizaciones === AutorizacionesCliente.MERCADO_PAGO ||
+                                        propiedad?.propietario.autorizaciones === AutorizacionesCliente.AMBAS) && (
+                                            <button
+                                                type="button"
+                                                aria-pressed={formaPago === FormaPago.MERCADO_PAGO}
+                                                onClick={() => setFormaPago(FormaPago.MERCADO_PAGO)}
+                                                className={`group rounded-2xl border p-4 transition flex items-center gap-3 ${formaPago === FormaPago.MERCADO_PAGO
+                                                    ? "border-[#009ee3]/60 bg-[#009ee3]/10 ring-2 ring-[#009ee3]/40"
+                                                    : "border-white/10 bg-zinc-800/30 hover:bg-zinc-800/50"
+                                                    }`}
+                                            >
+                                                <div className="rounded-xl bg-white p-2">
+                                                    <SiMercadopago className="text-[#009ee3]" size={28} />
+                                                </div>
+                                                <div className="text-left">
+                                                    <p className="font-medium">Mercado Pago</p>
+                                                    <p className="text-sm text-zinc-400">Tarjeta, débito o billetera</p>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                    {/* PAYPAL */}
+                                    {(propiedad?.propietario.autorizaciones === AutorizacionesCliente.PAYPAL ||
+                                        propiedad?.propietario.autorizaciones === AutorizacionesCliente.AMBAS) && (
+                                            <button
+                                                type="button"
+                                                aria-pressed={formaPago === FormaPago.PAYPAL}
+                                                onClick={() => setFormaPago(FormaPago.PAYPAL)}
+                                                className={`group rounded-2xl border p-4 transition flex items-center gap-3 ${formaPago === FormaPago.PAYPAL
+                                                    ? "border-[#003087]/60 bg-[#003087]/10 ring-2 ring-[#003087]/40"
+                                                    : "border-white/10 bg-zinc-800/30 hover:bg-zinc-800/50"
+                                                    }`}
+                                            >
+                                                <div className="rounded-xl bg-white p-2">
+                                                    <FaPaypal size={28} />
+                                                </div>
+                                                <div className="text-left">
+                                                    <p className="font-medium">PayPal</p>
+                                                    <p className="text-sm text-zinc-400">Pago internacional</p>
+                                                </div>
+                                            </button>
+                                        )}
                                 </div>
                             </div>
+
                         </section>
 
                         <aside className="lg:sticky lg:top-28 h-fit">

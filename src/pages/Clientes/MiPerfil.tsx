@@ -332,7 +332,7 @@ const MiPerfil: React.FC = () => {
       <div className="flex flex-col items-center bg-secondary pb-10 gap-5 text-white">
         {/* Verificaciones */}
         {!usuario.AuthenticatedEmail && (
-          <div className="w-full max-w-3/4 m-auto flex flex-col gap-3">
+          <div className="w-full max-w-3/4 m-auto flex flex-col items-center gap-3">
             <div
               className="flex items-center gap-2 bg-tertiary rounded-xl px-2 py-2 w-full cursor-pointer"
               onClick={() => setModalConfirmacion(true)}
