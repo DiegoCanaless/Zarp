@@ -1,4 +1,3 @@
-import React from 'react'
 import type { PropiedadResponseDTO } from '../../types/entities/propiedad/PropiedadResponseDTO';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UsuarioHeader } from '../../components/layout/headers/UsuarioHeader';

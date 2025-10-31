@@ -9,7 +9,6 @@ import { MdAdd } from 'react-icons/md'
 import { useNavigate } from 'react-router-dom'
 import { ButtonTertiary } from '../../components/ui/buttons/ButtonTertiary'
 import toast from "react-hot-toast";
-import { Client, IMessage } from '@stomp/stompjs'
 import { AutorizacionesCliente } from '../../types/enums/AutorizacionesCliente'
 
 const MisPropiedades = () => {

@@ -2,7 +2,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AutorizacionesCliente } from '../../types/enums/AutorizacionesCliente';
 
-type Propiedad = any; // si podés, reemplazá `any` por el tipo real
+type Propiedad = any;
 
 export interface UserState {
   id: string | null;

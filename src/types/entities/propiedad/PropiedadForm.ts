@@ -1,6 +1,4 @@
 // src/types/propiedadFormTypes.ts
-import { Provincia } from '../../enums/Provincia';
-
 export interface FormValues {
     nombre: string;
     descripcion: string;

@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import type { ClienteResponseDTO } from "../../../types/entities/cliente/ClienteResponseDTO";
 import type { PropiedadResponseDTO } from "../../../types/entities/propiedad/PropiedadResponseDTO";
 import { GenericTable } from "../../ui/TablaGenerica";
 import { Button, Modal, Box, Typography, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
-const PROPIEDADES_API = "http://localhost:8080/api/propiedades";
 
 // Modal custom style (usando color de fondo del sistema)
 const modalStyle = {

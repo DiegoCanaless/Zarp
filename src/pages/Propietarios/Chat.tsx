@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import type { ConversacionResponseDTO } from "../../types/entities/conversacion/ConversacionResponseDTO";
 import toast from "react-hot-toast";
 import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader";
-import { Footer } from "../../components/layout/Footer";
 import { useSelector } from "react-redux";
 import { IoMdSend } from "react-icons/io";
 import { Client } from '@stomp/stompjs';

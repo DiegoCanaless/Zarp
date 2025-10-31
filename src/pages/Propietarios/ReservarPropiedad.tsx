@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader";
 import { Footer } from "../../components/layout/Footer";
 import { useParams } from "react-router-dom";
@@ -11,7 +11,6 @@ import { SiMercadopago } from "react-icons/si";
 import { FaPaypal } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Link } from "react-router-dom";
 import { Client } from '@stomp/stompjs';
 import { AutorizacionesCliente } from "../../types/enums/AutorizacionesCliente";
 

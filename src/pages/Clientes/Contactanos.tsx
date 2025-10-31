@@ -1,4 +1,3 @@
-import React from "react";
 import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as yup from "yup";

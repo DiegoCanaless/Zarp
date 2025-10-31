@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { MdArrowForward } from "react-icons/md";
-import { VerificacionClienteResponseDTO } from "../../../types/entities/verificacionCliente/VerificacionClienteResponseDTO";
 import { Link } from "react-router-dom";
 import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { set } from "date-fns";
 
 const DocumentosVerificacion = () => {
 
@@ -17,7 +14,7 @@ const DocumentosVerificacion = () => {
   useEffect(() => {
     const cargarVerificacionesIniciales = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/verificacionClientes/activas");
+        const res = await fetch(`${import.meta.env.API_BASE}/api/verificacionClientes/activas`);
         if (!res.ok) throw new Error("Error al cargar verificaciones");
         const data = await res.json();
         setVerificaciones(data);

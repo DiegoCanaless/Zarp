@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { MdArrowForward } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { set } from "date-fns";
+
 
 const PropiedadesVerificacion = () => {
     const [verificaciones, setVerificaciones] = useState<any[]>([]);

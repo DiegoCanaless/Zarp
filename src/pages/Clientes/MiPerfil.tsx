@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 // Componentes
 import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader";
 import { Footer } from "../../components/layout/Footer";
-import { ButtonPrimary } from "../../components/ui/buttons/ButtonPrimary";
 import { ButtonSecondary } from "../../components/ui/buttons/ButtonSecondary";
 import { ButtonTertiary } from "../../components/ui/buttons/ButtonTertiary";
 
