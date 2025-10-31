@@ -14,7 +14,7 @@ const DocumentosVerificacion = () => {
   useEffect(() => {
     const cargarVerificacionesIniciales = async () => {
       try {
-        const res = await fetch(`${import.meta.env.APIBASE}/api/verificacionClientes/activas`);
+        const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/verificacionClientes/activas`);
         if (!res.ok) throw new Error("Error al cargar verificaciones");
         const data = await res.json();
         setVerificaciones(data);
