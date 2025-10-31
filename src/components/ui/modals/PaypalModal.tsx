@@ -177,7 +177,6 @@ const PayPalModal: React.FC<PayPalModalProps> = ({ isOpen, onClose, usuario }) =
                             text={saving ? "Enviando..." : "Enviar"}
                             maxWidth="w-[120px]"
                             onClick={handleSubmit as any}
-                            disabled={!emailValido || !emailsIguales || saving}
                         />
                     </div>
                 </form>
