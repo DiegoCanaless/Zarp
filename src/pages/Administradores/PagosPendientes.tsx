@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { UsuarioHeader } from '../../components/layout/headers/UsuarioHeader'
 import { Footer } from '../../components/layout/Footer'
 import type { PagoPendienteResponseDTO } from '../../types/entities/pagosPendientes/PagoPendienteResponseDTO';
@@ -11,11 +11,19 @@ const PagosPendientes = () => {
     const [error, setError] = useState<boolean>(false)
     const [stompClient, setStompClient] = useState<Client | null>(null);
     const [conectado, setConectado] = useState<boolean>(false);
+    const [opcionElegida, setOpcionElegida] = useState<string>("PENDIENTE")
+
+    const cambiarOpcion = (opcion: string) => {
+        setOpcionElegida(opcion)
+    }
+
+    const opcionRef = useRef(opcionElegida);
+  useEffect(() => { opcionRef.current = opcionElegida }, [opcionElegida]);
 
     useEffect(() => {
         const cargaInicialPagos = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/activos`)
+                const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/getByEstado/${opcionElegida}`)
                 if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
                 const data = await res.json()
@@ -29,15 +37,16 @@ const PagosPendientes = () => {
             }
         }
         cargaInicialPagos()
-    }, [])
+    }, [opcionElegida])
 
 
     const navigate = useNavigate()
 
-    // WebSockets
+    /* WebSockets: conectar una sola vez y suscribirse a save y update */
     useEffect(() => {
         let cliente: Client | null = null;
         let subsSave: StompSubscription | null = null;
+        let subsUpdate: StompSubscription | null = null;
         let isCleaningUp = false;
 
         const conectarWebSocket = () => {
@@ -48,31 +57,66 @@ const PagosPendientes = () => {
             });
 
             cliente.onConnect = () => {
-                if (isCleaningUp) return; // No suscribirse si ya se está limpiando
+                if (isCleaningUp) return;
 
                 console.log("Stomp conectado");
                 setConectado(true);
 
+                // SUBSCRIBE - SAVE (nuevo pagos)
                 try {
                     subsSave = cliente!.subscribe("/topic/pagosPendientes/save", (message: IMessage) => {
                         try {
                             const payload = JSON.parse(message.body) as PagoPendienteResponseDTO;
                             console.log("WS save recibido", payload);
-
                             if (!payload?.id) return;
 
-                            setPagos(prev => {
-                                // Evitar duplicados
-                                const existe = prev.some(p => p.id === payload.id);
-                                if (existe) return prev;
-                                return [payload, ...prev];
-                            });
+                            // Si el pago entrante coincide con el filtro actual, agregarlo (evitar duplicados)
+                            if (String(payload.estadoPagosPendientes).toUpperCase() === String(opcionRef.current).toUpperCase()) {
+                                setPagos(prev => {
+                                    const existe = prev.some(p => p.id === payload.id);
+                                    if (existe) return prev;
+                                    return [payload, ...prev];
+                                });
+                            }
                         } catch (error) {
                             console.log("Error parseando WS save: ", error);
                         }
                     });
                 } catch (error) {
                     console.log("Error subscribiendo a save topic: ", error);
+                }
+
+                // SUBSCRIBE - UPDATE (cambios de estado)
+                try {
+                    subsUpdate = cliente!.subscribe("/topic/pagosPendientes/update", (message: IMessage) => {
+                        try {
+                            const payload = JSON.parse(message.body) as PagoPendienteResponseDTO;
+                            console.log("WS update recibido", payload);
+                            if (!payload?.id) return;
+
+                            setPagos(prev => {
+                                const estadoPayload = String(payload.estadoPagosPendientes).toUpperCase();
+                                const filtro = String(opcionRef.current).toUpperCase();
+
+                                if (estadoPayload === filtro) {
+                                    // Si coincide con filtro, actualizar si existe o agregar al principio
+                                    const existe = prev.some(p => p.id === payload.id);
+                                    if (existe) {
+                                        return prev.map(p => p.id === payload.id ? payload : p);
+                                    } else {
+                                        return [payload, ...prev];
+                                    }
+                                } else {
+                                    // Si ya no coincide con el filtro, eliminarlo de la lista
+                                    return prev.filter(p => p.id !== payload.id);
+                                }
+                            });
+                        } catch (error) {
+                            console.log("Error parseando WS update: ", error);
+                        }
+                    });
+                } catch (error) {
+                    console.log("Error subscribiendo a update topic: ", error);
                 }
             };
 
@@ -96,34 +140,36 @@ const PagosPendientes = () => {
             isCleaningUp = true;
 
             if (subsSave) {
-                try {
-                    subsSave.unsubscribe();
-                } catch (e) {
-                    console.warn("Error al desuscribir:", e);
-                }
+                try { subsSave.unsubscribe(); } catch (e) { console.warn("Error al desuscribir save:", e); }
+            }
+            if (subsUpdate) {
+                try { subsUpdate.unsubscribe(); } catch (e) { console.warn("Error al desuscribir update:", e); }
             }
 
             if (cliente) {
-                try {
-                    cliente.deactivate();
-                } catch (e) {
-                    console.warn("Error al desactivar STOMP:", e);
-                }
+                try { cliente.deactivate(); } catch (e) { console.warn("Error al desactivar STOMP:", e); }
             }
 
             setStompClient(null);
             setConectado(false);
         };
-    }, []); // Dependencias vacías - solo se ejecuta al montar
+    }, []);
 
     return (
         <>
             <UsuarioHeader />
             <main className='bg-secondary min-h-screen pt-15'>
 
+                <div className='flex justify-around'>
+                    <button onClick={() => cambiarOpcion("PENDIENTE")} className='cursor-pointer px-6 bg-primary text-white rounded-2xl my-4 py-2'>Pendientes</button>
+                    <button onClick={() => cambiarOpcion("INICIADO")} className='cursor-pointer px-6 bg-primary text-white rounded-2xl my-4 py-2'>Iniciados</button>
+                    <button onClick={() => cambiarOpcion("COMPLETADO")} className='cursor-pointer px-6 bg-primary text-white rounded-2xl my-4 py-2'>Finalizados</button>
+                </div>
+
                 {Loading && <p className='text-white text-center mt-20'>Cargando pagos pendientes</p>}
                 {!Loading && error && <p className='text-white text-center mt-20'>Error al cargar pagos</p>}
-                {!Loading && !error && (
+                {!Loading && !error && Pagos.length === 0 && <p className='text-white text-center mt-20'>Aun no hay pagos en este estado</p>}
+                {!Loading && !error && Pagos.length > 0 && (
                     <table className='w-full text-white'>
                         <thead className='bg-primary'>
                             <tr className='font-medium'>
