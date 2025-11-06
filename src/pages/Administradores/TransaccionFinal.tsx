@@ -69,7 +69,7 @@ const TransaccionFinal = () => {
     return (
         <>
             <UsuarioHeader />
-            <main className='bg-secondary pt-15'>
+            <main className='bg-secondary pt-15 min-h-screen'>
 
                 <div className='m-auto bg-primary px-8 py-2 mb-15  text-white'>
                     <h1 className='text-center text-xl font-medium'>Transaccion Final</h1>
