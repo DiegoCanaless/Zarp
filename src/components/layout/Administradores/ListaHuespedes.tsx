@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import type { ClienteResponseDTO } from "../../../types/entities/cliente/ClienteResponseDTO";
 import type { PropiedadResponseDTO } from "../../../types/entities/propiedad/PropiedadResponseDTO";
 import { GenericTable } from "../../ui/TablaGenerica";
-
+import { Client } from "@stomp/stompjs";
 
 const Huespedes = () => {
     const [clientes, setClientes] = useState<ClienteResponseDTO[]>([]);
@@ -31,6 +31,30 @@ const Huespedes = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    // WS: Escuchar actualizaciones de usuarios (clientes)
+    useEffect(() => {
+        const wsClient = new Client({
+            brokerURL: import.meta.env.VITE_WS_URL,
+            reconnectDelay: 5000,
+            onConnect: () => {
+                wsClient.subscribe("/topic/clientes/update", (message) => {
+                    const updated: ClienteResponseDTO = JSON.parse(message.body);
+                    setClientes((prev) => {
+                        const idx = prev.findIndex(c => c.id === updated.id);
+                        if (idx >= 0) {
+                            const copy = prev.slice();
+                            copy[idx] = { ...copy[idx], ...updated };
+                            return copy;
+                        }
+                        return prev;
+                    });
+                });
+            },
+        });
+        wsClient.activate();
+        return () => wsClient.deactivate();
+    }, []);
+
     // IDs de clientes que tienen al menos una propiedad
     const clientesConPropiedadesIds = useMemo(() => {
         const setIds = new Set<number>();
@@ -50,17 +74,12 @@ const Huespedes = () => {
     // Para paginación
     const pagedRows = huespedesSinPropiedades.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-    // PATCH toggleActivo
+    // PATCH toggleActivo (no actualiza local, espera ws)
     const handleToggleActivo = async (id: number) => {
         try {
             const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH" });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
-            // Actualiza localmente el campo activo (toggle)
-            setClientes(cur =>
-                cur.map(c =>
-                    c.id === id ? { ...c, activo: !c.activo } : c
-                )
-            );
+            // No llamar setClientes, espera ws
         } catch (err) {
             alert("No se pudo actualizar el usuario.");
         }
