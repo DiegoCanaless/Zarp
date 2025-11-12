@@ -5,7 +5,7 @@ import type { EmpleadoResponseDTO } from "../empleado/EmpleadoResponseDTO";
 
 export interface PagoPendienteResponseDTO {
   id: number;
-  empleado: EmpleadoResponseDTO
+  empleado?: EmpleadoResponseDTO
   activo: boolean;
   monto: number;
   propietario: ClienteResponseDTO;

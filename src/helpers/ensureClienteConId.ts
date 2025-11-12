@@ -8,12 +8,22 @@ const API_CLIENTES = `${API_BASE}/api/clientes`;
 
 /** -------- Helpers internos -------- */
 
+// --- getUsuarioByUidLogin (actualizado) ---
 async function getUsuarioByUidLogin(uid: string): Promise<ClienteResponseDTO | null> {
     const res = await fetch(`${API_CLIENTES}/getByUidLogin/${encodeURIComponent(uid)}`);
+
     if (res.status === 404) return null;
+
+    if (res.status === 403) {
+        const err = new Error("Cuenta bloqueada");
+        err.name = "CuentaBloqueadaError";
+        throw err;
+    }
+
     if (!res.ok) throw new Error("No se pudo obtener (cliente/empleado) por uid");
     return res.json();
 }
+
 
 async function existsUidLogin(uid: string): Promise<boolean> {
     const res = await fetch(`${API_CLIENTES}/existe-uidLogin/${encodeURIComponent(uid)}`);

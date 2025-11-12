@@ -97,7 +97,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
       AuthenticatedEmail: resp.correoVerificado ?? fallback.emailVerified,
       AuthenticatedDocs: resp.documentoVerificado ?? false,
       rol: resp.rol ?? "CLIENTE",
-      autorizaciones: resp.autorizaciones, // <-- importante
+      autorizaciones: resp.autorizaciones,
       propiedades,
     });
 
@@ -112,7 +112,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
         AuthenticatedEmail: resp.correoVerificado ?? fallback.emailVerified,
         AuthenticatedDocs: resp.documentoVerificado ?? false,
         rol: resp.rol ?? "CLIENTE",
-        autorizaciones: resp.autorizaciones, // <-- enviamos SOLO autorizaciones
+        autorizaciones: resp.autorizaciones,
         propiedades,
       })
     );
@@ -143,8 +143,13 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
       let resp: ClienteResponseDTO;
       try {
         resp = await ensureUsuarioConIdLogin(dto);
-      } catch (e) {
+      } catch (e: any) {
         console.warn("[google login] No se pudo asegurar/obtener id del usuario:", e);
+        // Manejo específico: cuenta bloqueada
+        if (e?.name === "CuentaBloqueadaError" || e?.message === "Cuenta bloqueada") {
+          toast.error("Cuenta bloqueada");
+          return;
+        }
         toast.error("No se pudo sincronizar con el backend");
         return;
       }
@@ -211,9 +216,16 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
                 let resp: ClienteResponseDTO;
                 try {
                   resp = await ensureUsuarioConIdLogin(dto);
-                } catch (e) {
+                } catch (e: any) {
                   console.warn("[login] No se pudo asegurar/obtener id del usuario:", e);
+                  // Manejo específico: cuenta bloqueada
+                  if (e?.name === "CuentaBloqueadaError" || e?.message === "Cuenta bloqueada") {
+                    toast.error("Cuenta bloqueada");
+                    setSubmitting(false);
+                    return;
+                  }
                   toast.error("No se pudo sincronizar con el backend");
+                  setSubmitting(false);
                   return;
                 }
 
@@ -225,6 +237,8 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
                   token,
                   emailVerified,
                 });
+                // Desactivamos el spinner al terminar todo correctamente
+                setSubmitting(false);
               } catch (error: any) {
                 const code = error?.code || "";
                 if (
