@@ -4,15 +4,14 @@ import type { PropiedadResponseDTO } from "../../../types/entities/propiedad/Pro
 import { GenericTable } from "../../ui/TablaGenerica";
 import { Button, Modal, Box, Typography, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
+import { Client } from "@stomp/stompjs"; // WS
 
-
-// Modal custom style (usando color de fondo del sistema)
 const modalStyle = {
     position: 'absolute' as const,
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    bgcolor: '#223F47', // tu color principal
+    bgcolor: '#223F47',
     color: 'white',
     boxShadow: 24,
     borderRadius: '12px',
@@ -38,7 +37,7 @@ const ListaPropiedades = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalCliente, setModalCliente] = useState<ClienteConPropiedades | null>(null);
 
-    // Paginación principal
+    // Paginación
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -64,14 +63,52 @@ const ListaPropiedades = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    // =============== WEBSOCKET ===============
+    useEffect(() => {
+        const wsClient = new Client({
+            brokerURL: import.meta.env.VITE_WS_URL,
+            reconnectDelay: 5000,
+            onConnect: () => {
+                // Propiedades
+                wsClient.subscribe("/topic/propiedades/update", (message) => {
+                    const prop: PropiedadResponseDTO = JSON.parse(message.body);
+                    setPropiedades((prev) => {
+                        const idx = prev.findIndex(p => p.id === prop.id);
+                        if (idx >= 0) {
+                            const copy = prev.slice();
+                            copy[idx] = prop;
+                            return copy;
+                        }
+                        return prev;
+                    });
+                });
+
+                // Clientes (usuarios)
+                wsClient.subscribe("/topic/clientes/update", (message) => {
+                    const updated: ClienteResponseDTO = JSON.parse(message.body);
+                    setClientes((prev) => {
+                        const idx = prev.findIndex(c => c.id === updated.id);
+                        if (idx >= 0) {
+                            const copy = prev.slice();
+                            copy[idx] = { ...copy[idx], ...updated };
+                            return copy;
+                        }
+                        // Agregar solo si te interesa
+                        return prev;
+                    });
+                });
+            },
+        });
+        wsClient.activate();
+        return () => wsClient.deactivate();
+    }, []);
+    // =============== FIN WEBSOCKET ===============
+
     // Agrupa propiedades por usuario y filtra solo las verificadas
     const clientesConPropiedades: ClienteConPropiedades[] = useMemo(() => {
         const propsPorCliente = new Map<number, PropiedadResponseDTO[]>();
         propiedades.forEach((prop) => {
-            if (
-                prop.propietario &&
-                typeof prop.propietario.id === "number"
-            ) {
+            if (prop.propietario && typeof prop.propietario.id === "number") {
                 const arr = propsPorCliente.get(prop.propietario.id) ?? [];
                 arr.push(prop);
                 propsPorCliente.set(prop.propietario.id, arr);
@@ -91,47 +128,29 @@ const ListaPropiedades = () => {
             });
     }, [clientes, propiedades]);
 
-    // Para paginación principal
+    // Paginación
     const pagedRows = clientesConPropiedades.slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
     );
 
-    // PATCH toggleActivo para usuario
+    // PATCH toggleActivo para usuario (esperar al ws, no updatear localmente)
     const handleToggleUsuario = async (id: number) => {
         try {
             const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH" });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
-            setClientes(cur =>
-                cur.map(c =>
-                    c.id === id ? { ...c, activo: !c.activo } : c
-                )
-            );
+            // NO actualizar estado local, espera el evento del ws
         } catch (err) {
             alert("No se pudo actualizar el usuario.");
         }
     };
 
-    // PATCH toggleActivo para propiedad
+    // PATCH toggleActivo para propiedad (esperar al ws, pero sí actualiza el modal si está abierto)
     const handleTogglePropiedad = async (id: number) => {
         try {
             const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/toggleActivo/${id}`, { method: "PATCH" });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
-            setPropiedades(cur =>
-                cur.map(p =>
-                    p.id === id ? { ...p, activo: !p.activo } : p
-                )
-            );
-            // Actualiza también el modalCliente si está abierto
-            if (modalCliente) {
-                setModalCliente(prev => prev
-                    ? {
-                        ...prev,
-                        propiedades: prev.propiedades.map(p => p.id === id ? { ...p, activo: !p.activo } : p)
-                    }
-                    : prev
-                );
-            }
+            // NO actualizar local, esperar ws. Sincronía con modal reiniciará igual.
         } catch (err) {
             alert("No se pudo actualizar la propiedad.");
         }
@@ -144,14 +163,8 @@ const ListaPropiedades = () => {
             label: "Número",
             render: (row: ClienteConPropiedades) => `N°${row.id}`,
         },
-        {
-            key: "nombreCompleto",
-            label: "Nombre",
-        },
-        {
-            key: "correoElectronico",
-            label: "Correo",
-        },
+        { key: "nombreCompleto", label: "Nombre" },
+        { key: "correoElectronico", label: "Correo" },
         {
             key: "propiedadesAprobadas",
             label: "Propiedades (Aprobadas)",
@@ -228,12 +241,22 @@ const ListaPropiedades = () => {
         },
     ];
 
-    // Propiedades verificadas del cliente seleccionado en el modal
+    // --------- WS: Forzar propiedades en modal a inactivas si el usuario está inactivo ----------
     const propiedadesModal = useMemo(() => {
         if (!modalCliente) return [];
-        // Solo mostrar propiedades verificadas "APROBADA"
-        return modalCliente.propiedades.filter(p => p.verificacionPropiedad === "APROBADA");
-    }, [modalCliente, propiedades]);
+        // Refresca siempre propiedades del cliente desde el estado global
+        const clienteActual = clientes.find(c => c.id === modalCliente.id);
+        const propiedadesActuales = propiedades.filter(
+            p => p.propietario && p.propietario.id === modalCliente.id && p.verificacionPropiedad === "APROBADA"
+        );
+        if (clienteActual && !clienteActual.activo) {
+            // Si el usuario está inactivo (bloqueado), todas sus propiedades se ven como inactivas en el modal
+            return propiedadesActuales.map(p => ({ ...p, activo: false }));
+        }
+        // Si está activo, deja las propiedades activas como estén realmente
+        return propiedadesActuales;
+    }, [modalCliente, propiedades, clientes]);
+    // --------------------------------------------------------------------
 
     // Paginación para propiedades en el modal
     const pagedModalRows = propiedadesModal.slice(
