@@ -130,10 +130,19 @@ const TransaccionFinal = () => {
                             <h4>Metodo de Pago:</h4>
                             <p>{pago?.formaPago ?? '—'}</p>
                         </div>
-                        <div className='flex flex-col items-start'>
-                            <h4>Correo Electronico:</h4>
-                            <p>{pago?.propietario?.correoElectronico ?? '—'}</p>
-                        </div>
+                            {pago?.formaPago === "PAYPAL" ? (
+                                <div className='flex flex-col items-start'>
+                                    <h4>Correo Electronico:</h4>
+                                    <p>{pago?.propietario?.correoElectronico ?? '—'}</p>
+                                </div>
+                            ) : (
+                                <div className='flex flex-col items-start'>
+                                    <h4>Titular: {pago?.propietario?.credencialesMP.nombreTitular}</h4>
+                                    <p>CVU: {pago?.propietario?.credencialesMP.cvu ?? '—'}</p>
+                                </div>
+                            )}
+                                
+                            
                         <div className='flex flex-col items-start'>
                             <h4>Empleado a Cargo:</h4>
                             <p>{pago?.empleado?.nombreCompleto ?? '—'}</p>
@@ -154,7 +163,8 @@ const TransaccionFinal = () => {
                 </main>
 
                 <div className='flex justify-center pb-20'>
-                    <ButtonPrimary
+                    {pago?.estadoPagosPendientes !=  'COMPLETADO' && (
+                        <ButtonPrimary
                         onClick={transferenciaCompletada}
                         className='flex justify-center mt-10 px-2 cursor-pointer hover:scale-105'
                         fontWeight='font-medium'
@@ -163,6 +173,8 @@ const TransaccionFinal = () => {
                         fontSize='text-lg'
                         text={loading ? 'Procesando...' : 'Transferencia completada'}
                     />
+                    )}
+                    
                 </div>
 
             </main>
