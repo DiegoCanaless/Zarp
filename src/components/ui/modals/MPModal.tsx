@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 import { ButtonSecondary } from "../../ui/buttons/ButtonSecondary";
 import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../../reducer/user/userSlice";
 import { AutorizacionesCliente } from "../../../types/enums/AutorizacionesCliente";
 import { getAuth } from "firebase/auth";
@@ -12,6 +12,8 @@ type MPModalProps = {
     onClose: () => void;
     usuario: any;
 };
+
+const usuario = useSelector((state: any) => state.user);
 
 const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
     const [cvu, setCvu] = useState("");
@@ -52,7 +54,7 @@ const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        'Authorization': `Bearer ${usuario.token}`
                     },
                     body: JSON.stringify({
                         cvu: cvu.trim(),

@@ -116,7 +116,7 @@ const ReservarPropiedad = () => {
         const fetchFechasReservadas = async () => {
             try {
                 const res = await fetch(
-                    `${import.meta.env.VITE_APIBASE}/api/propiedades/reservas/${id}`
+                    `${import.meta.env.VITE_APIBASE}/api/propiedades/reservas/${id}`, {headers: { 'Authorization': `Bearer ${usuario.token}`}}
                 );
                 if (!res.ok) {
                     const msg = await res.text();
@@ -319,7 +319,8 @@ const ReservarPropiedad = () => {
                     `${import.meta.env.VITE_APIBASE}/api/mercadoPago/create-preference`,
                     {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: { "Content-Type": "application/json",'Authorization': `Bearer ${usuario.token}` },
+                        
                         body: JSON.stringify(reservacion),
                     }
                 );

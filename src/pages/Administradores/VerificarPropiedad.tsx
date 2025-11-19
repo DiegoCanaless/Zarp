@@ -16,6 +16,7 @@ import type { DetalleTipoPersonaResponseDTO } from '../../types/entities/detalle
 import type { DetalleAmbienteResponseDTO } from '../../types/entities/detalleAmbiente/DetalleAmbienteResponseDTO';
 import type { DetalleCaracteristicaResponseDTO } from '../../types/entities/detalleCaracteristica/DetalleCaracteristicaResponseDTO';
 import type { DetalleImagenResponseDTO } from '../../types/entities/detalleImagen/DetalleImagenResponseDTO';
+import { useSelector } from 'react-redux';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
@@ -29,6 +30,7 @@ const VerificarPropiedad = () => {
     const location = useLocation();
     const { verificacion } = location.state as { verificacion: PropiedadResponseDTO };
     const navigate = useNavigate();
+    const usuario = useSelector((state: any) => state.user);
 
     const position: [number, number] = [verificacion.direccion.latitud, verificacion.direccion.longitud]
 
@@ -46,7 +48,8 @@ const VerificarPropiedad = () => {
                 `${import.meta.env.VITE_APIBASE}/api/propiedades/verificacion/${verificacion.id}?activar=true`,
                 {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${usuario.token}` },
+                    
                 }
             );
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -64,7 +67,7 @@ const VerificarPropiedad = () => {
                 `${import.meta.env.VITE_APIBASE}/api/propiedades/verificacion/${verificacion.id}?activar=false`,
                 {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${usuario.token}` },
                 }
             );
             if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -20,6 +20,7 @@ const PayPalModal: React.FC<PayPalModalProps> = ({ isOpen, onClose, usuario }) =
     const [saving, setSaving] = useState(false);
     const dispatch = useDispatch();
 
+
     const emailsIguales = paypalEmail === paypalEmailRepeat;
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail);
 
@@ -51,7 +52,7 @@ const PayPalModal: React.FC<PayPalModalProps> = ({ isOpen, onClose, usuario }) =
                     method: "PUT",
                     headers: {
                         "Content-Type": "text/plain",
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        'Authorization': `Bearer ${usuario.token}`
                     },
                     body: paypalEmail.trim(),
                 }

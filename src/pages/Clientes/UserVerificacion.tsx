@@ -51,6 +51,7 @@ const UserVerificiacion = () => {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${usuario.token}`
         },
         body: JSON.stringify(verificacion)
       });

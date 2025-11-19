@@ -5,12 +5,15 @@ import ModalCaracteristica from "../../ui/modals/ModalCaracteristicas";
 import { GenericTable } from '../../ui/TablaGenerica';
 import Switch from "@mui/material/Switch";
 import type { CaracteristicaResponseDTO } from '../../../types/entities/caracteristica/CaracteristicaResponseDTO';
+import { useSelector } from "react-redux";
 
 const API = `${import.meta.env.VITE_APIBASE}/api/caracteristicas`;
 
 const Caracteristicas = () => {
     const [modalAbierto, setModalAbierto] = useState(false);
     const [editRow, setEditRow] = useState<CaracteristicaResponseDTO | null>(null);
+
+    const usuario = useSelector((state: any) => state.user);
 
     const abrirModal = () => {
         setEditRow(null);
@@ -59,6 +62,9 @@ const Caracteristicas = () => {
         try {
             const resp = await fetch(`${API}/toggleActivo/${id}`, {
                 method: "PATCH",
+                headers: {
+                    'Authorization': `Bearer ${usuario.token}`
+                }
             });
             const txt = await resp.clone().text();
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MdArrowForward } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { Client } from '@stomp/stompjs';
+import { useSelector } from "react-redux";
 
 const DocumentosVerificacion = () => {
 
@@ -11,10 +12,17 @@ const DocumentosVerificacion = () => {
   const [conectado, setConectado] = useState<boolean>(false);
   const [cargando, setCargando] = useState<boolean>(true)
 
+
+  const usuario = useSelector((state: any) => state.user);
+
   useEffect(() => {
     const cargarVerificacionesIniciales = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/verificacionClientes/activas`);
+        const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/verificacionClientes/activas`, {
+          headers: {
+            'Authorization': `Bearer ${usuario.token}`
+          }
+        });
         if (!res.ok) throw new Error("Error al cargar verificaciones");
         const data = await res.json();
         setVerificaciones(data);

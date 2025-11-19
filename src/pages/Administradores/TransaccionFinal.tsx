@@ -21,7 +21,7 @@ const TransaccionFinal = () => {
     useEffect(() => {
         const traerPago = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/getById/${id}`)
+                const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/getById/${id}`, { headers: {'Authorization': `Bearer ${usuario.token}`}} )
                 if (!res.ok) throw new Error(`HTTP ${res.status}`)
                 const data = await res.json()
                 setPago(data)
@@ -52,7 +52,7 @@ const TransaccionFinal = () => {
                 const url = `${import.meta.env.VITE_APIBASE}/api/pagosPendientes/iniciar/${pago.id}?uidEmpleado=${encodeURIComponent(uidEmpleado)}`;
                 const res = await fetch(url, {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${usuario.token}` }
                 });
                 if (!res.ok) {
                     const contentType = res.headers.get('content-type') ?? '';
@@ -86,7 +86,8 @@ const TransaccionFinal = () => {
             const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/cambiarEstado/${pago?.id}`, {
                 method: "PATCH",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${usuario.token}`
                 }
             })
             if (!res.ok) {

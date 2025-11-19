@@ -5,11 +5,13 @@ import { Footer } from "../../components/layout/Footer";
 import { ButtonPrimary } from "../../components/ui/buttons/ButtonPrimary";
 import { ButtonSecondary } from "../../components/ui/buttons/ButtonSecondary";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 const VerificarDocumentos = () => {
     const location = useLocation();
     const { verificacion } = location.state as { verificacion: VerificacionClienteResponseDTO };
     const navigate = useNavigate();
+    const usuario = useSelector((state: any) => state.user);
 
     // en VerificarDocumentos.tsx
     const handleValido = async () => {
@@ -18,7 +20,11 @@ const VerificarDocumentos = () => {
                 `${import.meta.env.VITE_APIBASE}/api/clientes/verificacion-documento/${verificacion.cliente.id}?verificado=true`,
                 {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': `Bearer ${usuario.token}`
+                    },
+
                 }
             );
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -26,7 +32,7 @@ const VerificarDocumentos = () => {
             navigate(-1);
         } catch (e) {
             toast.error("Surgió un error al verificar cliente", { duration: 2500 });
-            
+
         }
     };
 

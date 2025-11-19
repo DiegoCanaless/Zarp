@@ -7,11 +7,14 @@ import { createUserWithEmailAndPassword, getAuth, updateProfile } from "firebase
 import toast from "react-hot-toast";
 import { firebaseConfig } from "../../../config/firebase";
 import type { EmpleadoDTO } from "../../../types/entities/empleado/EmpleadoDTO";
+import { useSelector } from "react-redux";
 
 type ModalEmpleadoProps = {
     onClose: () => void;
     onSaved?: () => void;
 };
+
+const usuario = useSelector((state: any) => state.user);
 
 const registerSchema = yup.object().shape({
     name: yup.string().required("El nombre es requerido").min(3, "Mínimo 3 caracteres"),
@@ -32,7 +35,7 @@ function getSecondaryAuth() {
     return {
         auth,
         async dispose() {
-            try { await deleteApp(app); } catch {}
+            try { await deleteApp(app); } catch { }
         }
     };
 }
@@ -74,7 +77,7 @@ const ModalEmpleado = ({ onClose, onSaved }: ModalEmpleadoProps) => {
 
                             const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/empleados/save`, {
                                 method: "POST",
-                                headers: { "Content-Type": "application/json" },
+                                headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${usuario.token}` },
                                 body: JSON.stringify(empleado),
                             });
 

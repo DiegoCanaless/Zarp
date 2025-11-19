@@ -49,7 +49,7 @@ const Reservas = () => {
             const url = `${import.meta.env.VITE_APIBASE}/api/resenias/save`;
             const res = await fetch(url, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${usuario.token}` },
                 body: JSON.stringify(payload),
             });
 
@@ -137,7 +137,7 @@ const Reservas = () => {
                     return;
                 }
                 const url = `${import.meta.env.VITE_APIBASE}/api/reservas/cliente/${usuario.id}`;
-                const response = await fetch(url);
+                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${usuario.token}`}});
                 if (!response.ok) {
                     throw new Error(`Ocurrio un error desconocido`);
                 }

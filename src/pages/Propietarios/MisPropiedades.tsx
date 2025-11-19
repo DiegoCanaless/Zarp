@@ -60,7 +60,8 @@ const MisPropiedades = () => {
     const toggleActivo = async (id: number) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/toggleActivo/${id}`, {
-                method: "PATCH"
+                method: "PATCH",
+                headers: { 'Authorization': `Bearer ${usuario.token}` }
             })
             if (!response.ok) throw new Error("Error al cambiar estado")
 

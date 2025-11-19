@@ -4,6 +4,7 @@ import { Field, Formik, Form, ErrorMessage } from "formik";
 import * as yup from "yup";
 import type { AmbienteResponseDTO } from '../../../types/entities/ambiente/AmbienteResponseDTO';
 import type { AmbienteDTO } from '../../../types/entities/ambiente/AmbienteDTO';
+import { useSelector } from "react-redux";
 
 type ModalAmbienteProps = {
     onClose: () => void;
@@ -22,6 +23,8 @@ const ModalAmbiente = ({ onClose, onSaved, ambiente }: ModalAmbienteProps) => {
         // Opcional: efectos secundarios
         return () => { };
     }, [isEdit, ambiente]);
+
+    const usuario = useSelector((state: any) => state.user);
 
     return (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/30">
@@ -51,7 +54,10 @@ const ModalAmbiente = ({ onClose, onSaved, ambiente }: ModalAmbienteProps) => {
 
                             const resp = await fetch(url, {
                                 method,
-                                headers: { "Content-Type": "application/json" },
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    'Authorization': `Bearer ${usuario.token}`
+                                },
                                 body: JSON.stringify(payload),
                             });
 

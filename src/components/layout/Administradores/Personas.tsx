@@ -5,6 +5,7 @@ import ModalTipoPersona from "../../ui/modals/ModalPersona";
 import { GenericTable } from '../../ui/TablaGenerica';
 import Switch from "@mui/material/Switch";
 import type { TipoPersonaResponseDTO } from '../../../types/entities/tipoPersona/TipoPersonaResponseDTO';
+import { useSelector } from "react-redux";
 
 
 const TipoPersona = () => {
@@ -23,6 +24,8 @@ const TipoPersona = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set());
+
+  const usuario = useSelector((state: any) => state.user);
 
   const fetchTipoPersonas = () => {
     setLoading(true);
@@ -58,6 +61,9 @@ const TipoPersona = () => {
     try {
       const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPersona/toggleActivo/${id}`, {
         method: "PATCH",
+        headers: {
+          'Authorization': `Bearer ${usuario.token}`
+        }
       });
 
       if (!resp.ok) {

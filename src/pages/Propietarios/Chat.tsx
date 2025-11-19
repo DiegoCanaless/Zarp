@@ -68,7 +68,8 @@ const Chat = () => {
       const response = await fetch(`${import.meta.env.VITE_APIBASE}/api/conversaciones/agregar-mensaje/${conversacion.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${usuario.token}`
         },
         body: JSON.stringify({
           contenido: msg,

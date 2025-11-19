@@ -5,6 +5,7 @@ import ModalTipoPropiedad from "../../ui/modals/ModalPropiedades";
 import { GenericTable } from '../../ui/TablaGenerica';
 import Switch from "@mui/material/Switch";
 import type { TipoPropiedadResponseDTO } from '../../../types/entities/tipoPropiedad/TipoPropiedadResponseDTO';
+import { useSelector } from "react-redux";
 
 
 const TipoPropiedad = () => {
@@ -23,6 +24,8 @@ const TipoPropiedad = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set());
+
+  const usuario = useSelector((state: any) => state.user);
 
   const fetchTipoPropiedades = () => {
     setLoading(true);
@@ -58,6 +61,9 @@ const TipoPropiedad = () => {
     try {
       const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPropiedades/toggleActivo/${id}`, {
         method: "PATCH",
+        headers: {
+          'Authorization': `Bearer ${usuario.token}`
+        }
       });
 
       if (!resp.ok) {

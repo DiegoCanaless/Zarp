@@ -5,6 +5,7 @@ import * as yup from "yup";
 import { uploadImageCloudinary } from "../../../helpers/cloudinary";
 import type { CaracteristicaDTO } from "../../../types/entities/caracteristica/CaracteristicaDTO";
 import type { CaracteristicaResponseDTO } from '../../../types/entities/caracteristica/CaracteristicaResponseDTO';
+import { useSelector } from "react-redux";
 
 type ModalCaracteristicaProps = {
     onClose: () => void;
@@ -24,6 +25,8 @@ const baseSchema = {
         return file.size <= 2 * 1024 * 1024;
     }),
 };
+
+const usuario = useSelector((state: any) => state.user);
 
 const schemaCreate = yup.object({
     ...baseSchema,
@@ -99,11 +102,12 @@ const ModalCaracteristica = ({ onClose, onSaved, caracteristica }: ModalCaracter
                             if (isEdit && caracteristica) {
                                 url = `${import.meta.env.VITE_APIBASE}/api/caracteristicas/update/${caracteristica.id}`;
                                 method = "PUT";
+
                             }
 
                             const resp = await fetch(url, {
                                 method,
-                                headers: { "Content-Type": "application/json" },
+                                headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${usuario.token}` },
                                 body: JSON.stringify(payload),
                             });
 

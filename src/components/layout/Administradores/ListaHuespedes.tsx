@@ -3,6 +3,7 @@ import type { ClienteResponseDTO } from "../../../types/entities/cliente/Cliente
 import type { PropiedadResponseDTO } from "../../../types/entities/propiedad/PropiedadResponseDTO";
 import { GenericTable } from "../../ui/TablaGenerica";
 import { Client } from "@stomp/stompjs";
+import { useSelector } from "react-redux";
 
 const Huespedes = () => {
     const [clientes, setClientes] = useState<ClienteResponseDTO[]>([]);
@@ -13,6 +14,7 @@ const Huespedes = () => {
     // Paginación
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const usuario = useSelector((state: any) => state.user);
 
     useEffect(() => {
         setLoading(true);
@@ -77,7 +79,7 @@ const Huespedes = () => {
     // PATCH toggleActivo (no actualiza local, espera ws)
     const handleToggleActivo = async (id: number) => {
         try {
-            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH" });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH", headers: {'Authorization': `Bearer ${usuario.token}`} });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             // No llamar setClientes, espera ws
         } catch (err) {

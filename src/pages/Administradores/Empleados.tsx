@@ -5,6 +5,7 @@ import { ButtonSecondary } from "../../components/ui/buttons/ButtonSecondary"
 import { EmpleadoResponseDTO } from "../../types/entities/empleado/EmpleadoResponseDTO"
 import toast from "react-hot-toast";
 import ModalEmpleado from "../../components/ui/modals/ModalEmpleado"
+import { useSelector } from "react-redux"
 
 
 const Empleados = () => {
@@ -19,6 +20,8 @@ const Empleados = () => {
         setModal(!modal)
     }
 
+    const usuario = useSelector((state: any) => state.user);
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setBusqueda(e.target.value);
     };
@@ -30,7 +33,7 @@ const Empleados = () => {
 
     const handleToggleActivo = async (id: number) => {
         try {
-            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/empleados/toggleActivo/${id}`, { method: "PATCH" });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/empleados/toggleActivo/${id}`, { method: "PATCH", headers: { 'Authorization': `Bearer ${usuario.token}` } });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             setEmpleados(element =>
                 element.map(element =>

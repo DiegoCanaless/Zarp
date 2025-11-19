@@ -214,7 +214,7 @@ const EditarPropiedad = () => {
 
                             const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/update/${id}`, {
                                 method: "PUT",
-                                headers: { "Content-Type": "application/json" },
+                                headers: { "Content-Type": "application/json",  'Authorization': `Bearer ${usuario.token}` },
                                 body: JSON.stringify(payload),
                             });
 

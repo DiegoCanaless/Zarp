@@ -3,6 +3,7 @@ import { Field, Formik, Form, ErrorMessage } from "formik";
 import * as yup from "yup";
 import type { TipoPersonaResponseDTO } from '../../../types/entities/tipoPersona/TipoPersonaResponseDTO';
 import type { TipoPersonaDTO } from '../../../types/entities/tipoPersona/TipoPersonaDTO';
+import { useSelector } from "react-redux";
 
 type ModalTipoPersonaProps = {
     onClose: () => void;
@@ -14,6 +15,8 @@ const schema = yup.object({
     denominacion: yup.string().trim().required("El nombre es requerido"),
     descripcion: yup.string().trim().required("La descripción es requerida"),
 });
+
+const usuario = useSelector((state: any) => state.user);
 
 const ModalTipoPersona = ({ onClose, onSaved, tipoPersona }: ModalTipoPersonaProps) => {
     const isEdit = !!tipoPersona;
@@ -48,7 +51,7 @@ const ModalTipoPersona = ({ onClose, onSaved, tipoPersona }: ModalTipoPersonaPro
 
                             const resp = await fetch(url, {
                                 method,
-                                headers: { "Content-Type": "application/json" },
+                                headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${usuario.token}` },
                                 body: JSON.stringify(payload),
                             });
 

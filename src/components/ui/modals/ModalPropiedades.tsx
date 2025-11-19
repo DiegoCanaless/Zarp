@@ -3,12 +3,15 @@ import { Field, Formik, Form, ErrorMessage } from "formik";
 import * as yup from "yup";
 import type { TipoPropiedadResponseDTO } from '../../../types/entities/tipoPropiedad/TipoPropiedadResponseDTO';
 import type { TipoPropiedadDTO } from '../../../types/entities/tipoPropiedad/TipoPropiedadDTO';
+import { useSelector } from "react-redux";
 
 type ModalTipoPropiedadProps = {
     onClose: () => void;
     onSaved?: () => void;
     tipoPropiedad?: TipoPropiedadResponseDTO;
 };
+
+const usuario = useSelector((state: any) => state.user);
 
 const schema = yup.object({
     denominacion: yup.string().trim().required("El nombre es requerido"),
@@ -45,7 +48,7 @@ const ModalPropiedad = ({ onClose, onSaved, tipoPropiedad }: ModalTipoPropiedadP
 
                             const resp = await fetch(url, {
                                 method,
-                                headers: { "Content-Type": "application/json" },
+                                headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${usuario.token}` },
                                 body: JSON.stringify(payload),
                             });
 

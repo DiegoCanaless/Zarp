@@ -147,7 +147,7 @@ const CrearPropiedad = () => {
             setCreating(true);
             const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/save`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${usuario.token}` },
                 body: JSON.stringify(payload),
             });
 

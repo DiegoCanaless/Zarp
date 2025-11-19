@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { ReservaResponseDTO } from '../../types/entities/reserva/ReservaResponseDTO';
 import toast from 'react-hot-toast';
 import { ButtonTertiary } from '../../components/ui/buttons/ButtonTertiary';
+import { useSelector } from 'react-redux';
 
 const ReservacionesPropiedad = () => {
     const [cargando, setCargando] = useState<boolean>(true);
@@ -12,6 +13,8 @@ const ReservacionesPropiedad = () => {
     const [reservas, setReservas] = useState<ReservaResponseDTO[]>([])
 
     const navigate = useNavigate()
+
+    const usuario = useSelector((s: any) => s.user);
 
 
 
@@ -22,7 +25,7 @@ const ReservacionesPropiedad = () => {
             try {
                 setCargando(true);
 
-                const response = await fetch(`${import.meta.env.VITE_APIBASE}/api/reservas/propiedad/${id}`)
+                const response = await fetch(`${import.meta.env.VITE_APIBASE}/api/reservas/propiedad/${id}`, {headers:  {'Authorization': `Bearer ${usuario.token}`}})
 
                 if (!response.ok) {
                     throw new Error(`Ocurrio un error desconocido`);

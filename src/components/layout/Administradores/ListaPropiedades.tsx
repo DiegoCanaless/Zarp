@@ -5,6 +5,7 @@ import { GenericTable } from "../../ui/TablaGenerica";
 import { Button, Modal, Box, Typography, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { Client } from "@stomp/stompjs"; // WS
+import { useSelector } from "react-redux";
 
 const modalStyle = {
     position: 'absolute' as const,
@@ -44,6 +45,8 @@ const ListaPropiedades = () => {
     // Paginación de propiedades en el modal
     const [modalPage, setModalPage] = useState(0);
     const [modalRowsPerPage, setModalRowsPerPage] = useState(10);
+
+    const usuario = useSelector((state: any) => state.user);
 
     useEffect(() => {
         setLoading(true);
@@ -137,7 +140,7 @@ const ListaPropiedades = () => {
     // PATCH toggleActivo para usuario (esperar al ws, no updatear localmente)
     const handleToggleUsuario = async (id: number) => {
         try {
-            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH" });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH", headers: {'Authorization': `Bearer ${usuario.token}`}});
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             // NO actualizar estado local, espera el evento del ws
         } catch (err) {
@@ -148,7 +151,7 @@ const ListaPropiedades = () => {
     // PATCH toggleActivo para propiedad (esperar al ws, pero sí actualiza el modal si está abierto)
     const handleTogglePropiedad = async (id: number) => {
         try {
-            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/toggleActivo/${id}`, { method: "PATCH" });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/toggleActivo/${id}`, { method: "PATCH", headers: {'Authorization': `Bearer ${usuario.token}`} });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             // NO actualizar local, esperar ws. Sincronía con modal reiniciará igual.
         } catch (err) {

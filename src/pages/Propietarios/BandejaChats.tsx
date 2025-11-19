@@ -24,6 +24,7 @@ const BandejaChats = () => {
 
     const user = useSelector((state: any) => state.user);
     const navigate = useNavigate();
+    const usuario = useSelector((state: any) => state.user);
 
     // Fetch inicial: se dispara cuando user.id esté disponible
     useEffect(() => {
@@ -38,7 +39,7 @@ const BandejaChats = () => {
             setError(false);
             try {
                 const url = `${import.meta.env.VITE_APIBASE}/api/conversaciones/cliente/${user.id}`;
-                const response = await fetch(url);
+                const response = await fetch(url , { headers: { 'Authorization': `Bearer ${usuario.token}`}});
                 if (!response.ok) {
                     const text = await response.text().catch(() => '');
                     console.error("Fetch conversaciones error:", response.status, text);
