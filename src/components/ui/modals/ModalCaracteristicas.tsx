@@ -26,8 +26,6 @@ const baseSchema = {
     }),
 };
 
-const usuario = useSelector((state: any) => state.user);
-
 const schemaCreate = yup.object({
     ...baseSchema,
     img_upload: yup
@@ -42,6 +40,8 @@ const ModalCaracteristica = ({ onClose, onSaved, caracteristica }: ModalCaracter
     const isEdit = !!caracteristica;
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [subiendo, setSubiendo] = useState(false);
+
+    const usuario = useSelector((state: any) => state.user);
 
     useEffect(() => {
         if (isEdit && caracteristica?.imagen?.urlImagen) {

@@ -14,8 +14,6 @@ type ModalEmpleadoProps = {
     onSaved?: () => void;
 };
 
-const usuario = useSelector((state: any) => state.user);
-
 const registerSchema = yup.object().shape({
     name: yup.string().required("El nombre es requerido").min(3, "Mínimo 3 caracteres"),
     email: yup.string().required("El correo es requerido").email("Formato inválido"),
@@ -41,6 +39,8 @@ function getSecondaryAuth() {
 }
 
 const ModalEmpleado = ({ onClose, onSaved }: ModalEmpleadoProps) => {
+    const usuario = useSelector((state: any) => state.user);
+
     return (
         <div className="fixed inset-0 z-20 bg-black/30 flex items-center justify-center">
             <div className="w-120 max-w-[560px] bg-tertiary rounded-lg p-4">

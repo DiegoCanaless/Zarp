@@ -13,13 +13,14 @@ type MPModalProps = {
     usuario: any;
 };
 
-const usuario = useSelector((state: any) => state.user);
+
 
 const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
     const [cvu, setCvu] = useState("");
     const [titular, setTitular] = useState("");
     const [saving, setSaving] = useState(false);
     const dispatch = useDispatch();
+
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();

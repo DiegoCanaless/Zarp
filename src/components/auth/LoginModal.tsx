@@ -26,7 +26,7 @@ import { fetchPropiedadesByCliente } from "../../helpers/propiedades";
 // Tipos
 import type { ClienteDTO } from "../../types/entities/cliente/ClienteDTO";
 import type { ClienteResponseDTO } from "../../types/entities/cliente/ClienteResponseDTO";
-
+import { ensureUsuarioConIdLogin } from "../../helpers/ensureClienteConId";
 
 interface LoginModalProps {
   onClose: () => void;
@@ -140,7 +140,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
 
       let resp: ClienteResponseDTO;
       try {
-        resp = await ensureUsuarioConIdLogin(dto, token);
+        resp = await ensureUsuarioConIdLogin(dto);
       } catch (e: any) {
         console.warn("[google login] No se pudo asegurar/obtener id del usuario:", e);
         // Manejo específico: cuenta bloqueada
@@ -213,7 +213,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
 
                 let resp: ClienteResponseDTO;
                 try {
-                  resp = await ensureUsuarioConIdLogin(dto, token);
+                  resp = await ensureUsuarioConIdLogin(dto);
                 } catch (e: any) {
                   console.warn("[login] No se pudo asegurar/obtener id del usuario:", e);
                   // Manejo específico: cuenta bloqueada

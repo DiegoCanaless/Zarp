@@ -16,10 +16,12 @@ const schema = yup.object({
     descripcion: yup.string().trim().required("La descripción es requerida"),
 });
 
-const usuario = useSelector((state: any) => state.user);
+
 
 const ModalTipoPersona = ({ onClose, onSaved, tipoPersona }: ModalTipoPersonaProps) => {
     const isEdit = !!tipoPersona;
+
+    const usuario = useSelector((state: any) => state.user);
 
     return (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/30">

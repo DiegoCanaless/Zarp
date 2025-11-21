@@ -16,6 +16,10 @@ const PagosPendientes = () => {
     const [opcionElegida, setOpcionElegida] = useState<string>("PENDIENTE")
     const [actionLoading, setActionLoading] = useState<number | null>(null); // id de pago que está procesando
 
+    // Normalizo el usuario desde el store: soporta state.user.user o state.user
+    const usuarioFromStore = useSelector((state: any) => state.user?.user ?? state.user);
+    const usuario = usuarioFromStore ?? {};
+
     const cambiarOpcion = (opcion: string) => {
         setOpcionElegida(opcion)
     }
@@ -24,32 +28,48 @@ const PagosPendientes = () => {
     useEffect(() => { opcionRef.current = opcionElegida }, [opcionElegida]);
 
     useEffect(() => {
+        let cancelled = false;
+
         const cargaInicialPagos = async () => {
+            // Si no hay token, no intento la petición (evita llamadas con Authorization vacío)
+            if (!usuario?.token) {
+                // si querés mostrar un mensaje de login: toast.error('Sesión no iniciada')
+                setLoading(false);
+                setPagos([]);
+                return;
+            }
+
             try {
                 setLoading(true)
                 setError(false)
-                const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/getByEstado/${opcionElegida}`)
+                const res = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/getByEstado/${opcionElegida}`, {
+                    headers: {
+                        'Authorization': `Bearer ${usuario.token}`
+                    }
+                })
                 if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
                 const data = await res.json()
-                setPagos(data)
-                setLoading(false)
-            } catch (error) {
-                setError(true)
-                setLoading(false)
-                console.error("Error cargaInicialPagos:", error)
+                if (!cancelled) setPagos(data)
+                if (!cancelled) setLoading(false)
+            } catch (err) {
+                if (!cancelled) {
+                    setError(true)
+                    setLoading(false)
+                    console.error("Error cargaInicialPagos:", err)
+                }
             }
         }
+
         cargaInicialPagos()
-    }, [opcionElegida])
+
+        return () => { cancelled = true }
+    }, [opcionElegida, usuario?.token]) // RE-INTENTA cuando el token llegue al store o cambie
 
     const navigate = useNavigate()
 
-    // obtiene el usuario del store -> soporta state.user o state.user.user
-    const usuarioFromStore = useSelector((state: any) => state.user?.user ?? state.user);
-    const usuario = usuarioFromStore ?? {};
-
-    /* WebSockets: conectar una sola vez y suscribirse a save y update */
+    /* WebSockets: conectar una sola vez y suscribirse a save y update.
+       Incluyo connectHeaders Authorization si existe token. */
     useEffect(() => {
         let cliente: Client | null = null;
         let subsSave: StompSubscription | null = null;
@@ -61,6 +81,7 @@ const PagosPendientes = () => {
                 brokerURL: import.meta.env.VITE_WS_URL,
                 reconnectDelay: 5000,
                 debug: (msg) => console.log({ STOMP: msg }),
+                connectHeaders: usuario?.token ? { Authorization: `Bearer ${usuario.token}` } : undefined
             });
 
             cliente.onConnect = () => {
@@ -134,6 +155,8 @@ const PagosPendientes = () => {
             setStompClient(cliente);
         };
 
+        // Si no tenemos token, igualmente podemos conectar si tu WS no requiere auth;
+        // si sí requiere auth, el connectHeaders anterior usará token cuando exista.
         conectarWebSocket();
 
         // Cleanup
@@ -154,15 +177,18 @@ const PagosPendientes = () => {
             setStompClient(null);
             setConectado(false);
         };
-    }, []);
+    }, [usuario?.token]); // si el token cambia, reconectamos (útil si se loguea el user)
 
     // Handler al click en fila: si está PENDIENTE -> iniciar, si no -> navegar directamente.
     const handleOpenPago = async (pago: PagoPendienteResponseDTO) => {
         if (!pago?.id) return;
         if (actionLoading) return; // ya hay una acción en curso
+
         const uidEmpleado = usuario?.uid ?? null;
-        if (!uidEmpleado) {
-            toast.error('UID empleado no encontrado en el store. Revisa el login o el state de Redux.');
+        const token = usuario?.token ?? null;
+
+        if (!uidEmpleado || !token) {
+            toast.error('UID o token de empleado no encontrado en el store. Revisa el login o el state de Redux.');
             console.error('Usuario desde store:', usuario);
             return;
         }
@@ -181,7 +207,7 @@ const PagosPendientes = () => {
             const url = `${import.meta.env.VITE_APIBASE}/api/pagosPendientes/iniciar/${pago.id}?uidEmpleado=${encodeURIComponent(uidEmpleado)}`;
             const res = await fetch(url, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
             });
 
             if (!res.ok) {
@@ -190,15 +216,15 @@ const PagosPendientes = () => {
                 const body = contentType.includes('application/json') ? await res.json().catch(() => null) : await res.text().catch(() => null);
                 console.error('Error iniciar pago - status:', res.status, 'body:', body);
 
-                // Si el backend responde que ya no está en PENDIENTE (500 con ese mensaje),
+                // Si el backend responde que ya no está en PENDIENTE (p.ej. 500 con ese mensaje),
                 // intentamos traer el pago actualizado y navegar.
                 if (res.status >= 500) {
-                    // intentar obtener el pago actualizado
                     try {
-                        const fetchPago = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/getById/${pago.id}`);
+                        const fetchPago = await fetch(`${import.meta.env.VITE_APIBASE}/api/pagosPendientes/getById/${pago.id}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
                         if (fetchPago.ok) {
                             const pagoActualizado = await fetchPago.json();
-                            // actualizar local y navegar
                             setPagos(prev => prev.map(p => p.id === pagoActualizado.id ? pagoActualizado : p));
                             navigate(`/TransaccionFinal/${pago.id}`);
                             toast('El pago ya no estaba en PENDIENTE. Abriendo transacción con datos actualizados.', { icon: 'ℹ️' });

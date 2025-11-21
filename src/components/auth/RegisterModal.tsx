@@ -71,7 +71,7 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
         fotoPerfil: { urlImagen: foto },
       };
 
-      const clienteResp = await ensureClienteStrict(cliente, token);
+      const clienteResp = await ensureClienteStrict(cliente);
 
       // Opcional: logueá el payload para debug (borralo en prod)
       console.log("payload setUser (google register):", {
@@ -168,7 +168,7 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                   fotoPerfil: { urlImagen: foto },
                 };
 
-                const clienteResp = await ensureClienteStrict(cliente, token);
+                const clienteResp = await ensureClienteStrict(cliente);
                 const photoURLSafe =
                   (clienteResp.fotoPerfil?.urlImagen && clienteResp.fotoPerfil.urlImagen.trim()) ||
                   (foto && foto.trim()) ||

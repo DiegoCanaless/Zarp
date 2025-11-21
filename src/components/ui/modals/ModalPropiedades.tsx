@@ -11,7 +11,7 @@ type ModalTipoPropiedadProps = {
     tipoPropiedad?: TipoPropiedadResponseDTO;
 };
 
-const usuario = useSelector((state: any) => state.user);
+
 
 const schema = yup.object({
     denominacion: yup.string().trim().required("El nombre es requerido"),
@@ -19,6 +19,8 @@ const schema = yup.object({
 
 const ModalPropiedad = ({ onClose, onSaved, tipoPropiedad }: ModalTipoPropiedadProps) => {
     const isEdit = !!tipoPropiedad;
+
+    const usuario = useSelector((state: any) => state.user);
 
     return (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/30">
