@@ -347,7 +347,8 @@ const ReservarPropiedad = () => {
                     `${import.meta.env.VITE_APIBASE}/api/paypal/crearOrdenPago`,
                     {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: { "Content-Type": "application/json",
+                            'Authorization': `Bearer ${usuario.token}`},
                         body: JSON.stringify(reservacion),
                     }
                 );

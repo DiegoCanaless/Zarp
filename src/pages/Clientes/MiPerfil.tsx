@@ -441,8 +441,8 @@ const MiPerfil: React.FC = () => {
             <ButtonTertiary
               onClick={enviarCodigo}
               text="Enviar Correo"
-              maxWidth="max-w-[160px]"
-            />
+              maxWidth="max-w-[160px]" 
+            className="px-2"/>
           </div>
         </div>
       )}

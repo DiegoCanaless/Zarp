@@ -56,7 +56,7 @@ const VerificarDocumentos = () => {
     return (
         <>
             <UsuarioHeader />
-            <main className="bg-secondary pt-20">
+            <main className="bg-secondary pt-20 min-h-screen">
                 <div className="flex flex-col justify-center px-20 gap-5 pb-10">
                     <h1 className="mt-5 text-white text-lg mb-5 items-start">Verificacion de: {verificacion.cliente.nombreCompleto}</h1>
 

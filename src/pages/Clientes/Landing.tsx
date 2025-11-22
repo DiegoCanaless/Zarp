@@ -99,8 +99,8 @@ const Landing = () => {
 
               {/* Contenido */}
               <div className="w-full sm:w-2/3 flex flex-col justify-center sm:py-4 sm:pr-4">
-                <h2 className="text-xl font-semibold">Mauricio Macri</h2>
-                <h5 className="text-gray-300 mb-3">Huésped</h5>
+                <h2 className="text-xl font-semibold">Benicio Rueda</h2>
+                <h5 className="text-gray-300 mb-3">Propietario</h5>
                 <p className="mb-4 text-sm sm:text-base leading-relaxed">
                   "Publicar mi apartamento fue increíblemente sencillo. En menos de 15 minutos estaba activo, y en el primer mes tuve 3 reservas. ¡Los pagos llegaron puntuales y sin complicaciones!"
                 </p>
@@ -117,8 +117,8 @@ const Landing = () => {
 
             <div className="w-full gap-30 max-w-2xl mx-auto lg:max-w-3xl bg-primary rounded-lg flex flex-col sm:flex-row text-white font-regular px-4 py-4 sm:gap-4 sm:px-0 sm:py-0 shadow-lg">
               <div className="w-full sm:w-2/3 flex flex-col justify-center sm:py-4 sm:pl-4">
-                <h2 className="text-xl font-semibold">Jorge Rial</h2>
-                <h5 className="text-gray-300 mb-3">Propietario</h5>
+                <h2 className="text-xl font-semibold">Margarita Soliz</h2>
+                <h5 className="text-gray-300 mb-3">Huésped</h5>
                 <p className="mb-4 text-sm sm:text-base leading-relaxed">"Alquilé un loft con terraza en el centro. El dueño dejó recomendaciones locales geniales y el check-in fue súper ágil. ¡Sentí que vivía allí, no como un turista más!"</p>
                 <div className="flex gap-1 items-center mb-2">
                   {puntuacion.map((star, index) => (
