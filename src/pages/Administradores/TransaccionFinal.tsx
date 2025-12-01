@@ -154,11 +154,6 @@ const TransaccionFinal = () => {
                                 <h5>Monto:</h5>
                                 <p>${pago?.monto ?? 0}</p>
                             </div>
-                            <p>-5%</p>
-                            <div className='flex flex-col'>
-                                <h5>Transferir:</h5>
-                                <p>${pago ? (pago.monto * 0.95).toFixed(2) : '0.00'}</p>
-                            </div>
                         </div>
                     </div>
                 </main>
