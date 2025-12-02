@@ -92,3 +92,61 @@ html {
   will-change: transform;
   transform-origin: center right;
 }
+
+/* ===== Estilo exclusivo para el scroll horizontal de las propiedades ===== */
+/* Pegar al final del CSS global para asegurar prioridad. */
+
+/* Contenedor */
+.propiedades-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;            /* evitar scrollbar vertical */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;      /* evita salto de layout cuando aparece la barra */
+}
+
+/* WebKit (Chrome, Edge, Safari) — grosor horizontal */
+.propiedades-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+/* Track (fondo) -> color pedido #111C1F */
+.propiedades-scroll::-webkit-scrollbar-track {
+  background: #111C1F;
+  border-radius: 8px;
+}
+
+/* Thumb (la barra que se mueve) -> color pedido #223F47 */
+.propiedades-scroll::-webkit-scrollbar-thumb,
+.propiedades-scroll::-webkit-scrollbar-thumb:horizontal {
+  background: #223F47;
+  border-radius: 8px;
+  border: 2px solid transparent; /* efecto 'flotante' si querés */
+}
+
+/* Eliminar flechas / botones del scrollbar (varias variantes para compatibilidad) */
+.propiedades-scroll::-webkit-scrollbar-button,
+.propiedades-scroll::-webkit-scrollbar-button:single-button,
+.propiedades-scroll::-webkit-scrollbar-button:single-button:decrement,
+.propiedades-scroll::-webkit-scrollbar-button:single-button:increment,
+.propiedades-scroll::-webkit-scrollbar-button:horizontal,
+.propiedades-scroll::-webkit-scrollbar-button:vertical {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Quitar esquina si hay scroll en ambos ejes */
+.propiedades-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+.propiedades-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #376572 #111C1F; /* thumb track */
+}
+
+/* (Opcional) Hacer thumb un poco más visible al hover del contenedor */
+.propiedades-scroll:hover::-webkit-scrollbar-thumb {
+  background: #376572; /* variante un poco más clara - opcional */
+}
