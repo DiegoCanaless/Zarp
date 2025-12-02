@@ -26,6 +26,8 @@ import BandejaChats from '../pages/Propietarios/BandejaChats';
 import Chat from '../pages/Propietarios/Chat';
 import PagosPendientes from '../pages/Administradores/PagosPendientes';
 import TransaccionFinal from '../pages/Administradores/TransaccionFinal';
+import PagoFinalizado from '../pages/Clientes/PagoFinalizado';
+import PagoDenegado from '../pages/Clientes/PagoDenegado';
 
 
 
@@ -130,6 +132,20 @@ export default function AppRoutes() {
         <Route path="/Chat/:id" element={
           <RequireRole allowed={["PROPIETARIO"]}>
             <Chat />
+          </RequireRole>
+        }
+        />
+
+        <Route path="/PagoFinalizado" element={
+          <RequireRole allowed={["PROPIETARIO"]}>
+            <PagoFinalizado />
+          </RequireRole>
+        }
+        />
+
+        <Route path="/PagoDenegado" element={
+          <RequireRole allowed={["PROPIETARIO"]}>
+            <PagoDenegado />
           </RequireRole>
         }
         />
