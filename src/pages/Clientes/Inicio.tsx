@@ -292,7 +292,7 @@ export default function Inicio() {
                     {items.length} {items.length === 1 ? "propiedad" : "propiedades"}
                   </span>
                 </div>
-                <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
+                <div className="propiedades-scroll flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
                   {items.map((prop) => (
                     <CardPropiedad
                       key={prop.id ?? `${prov}-${prop.nombre}`}
