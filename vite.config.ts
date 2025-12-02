@@ -15,5 +15,8 @@ export default defineConfig({
     alias:{
       
     }
+  },
+  server: {
+    allowedHosts: true
   }
 })
