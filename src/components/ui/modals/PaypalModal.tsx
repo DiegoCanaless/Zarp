@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../../reducer/user/userSlice";
 import { AutorizacionesCliente } from "../../../types/enums/AutorizacionesCliente";
-import { getAuth } from "firebase/auth";
 
 type PayPalModalProps = {
     isOpen: boolean;

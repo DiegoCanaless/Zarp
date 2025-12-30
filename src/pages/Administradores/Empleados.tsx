@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Footer } from "../../components/layout/Footer"
 import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader"
 import { ButtonSecondary } from "../../components/ui/buttons/ButtonSecondary"
-import { EmpleadoResponseDTO } from "../../types/entities/empleado/EmpleadoResponseDTO"
+import  type { EmpleadoResponseDTO } from "../../types/entities/empleado/EmpleadoResponseDTO"
 import toast from "react-hot-toast";
 import ModalEmpleado from "../../components/ui/modals/ModalEmpleado"
 import { useSelector } from "react-redux"

@@ -11,8 +11,6 @@ const PagosPendientes = () => {
     const [Loading, setLoading] = useState<boolean>(true);
     const [Pagos, setPagos] = useState<PagoPendienteResponseDTO[]>([]);
     const [error, setError] = useState<boolean>(false)
-    const [stompClient, setStompClient] = useState<Client | null>(null);
-    const [conectado, setConectado] = useState<boolean>(false);
     const [opcionElegida, setOpcionElegida] = useState<string>("PENDIENTE")
     const [actionLoading, setActionLoading] = useState<number | null>(null); // id de pago que está procesando
 
@@ -88,7 +86,6 @@ const PagosPendientes = () => {
                 if (isCleaningUp) return;
 
                 console.log("Stomp conectado");
-                setConectado(true);
 
                 // SUBSCRIBE - SAVE
                 try {
@@ -148,11 +145,9 @@ const PagosPendientes = () => {
 
             cliente.onDisconnect = () => {
                 console.log("Stomp desconectado");
-                setConectado(false);
             };
 
             cliente.activate();
-            setStompClient(cliente);
         };
 
         // Si no tenemos token, igualmente podemos conectar si tu WS no requiere auth;
@@ -174,8 +169,6 @@ const PagosPendientes = () => {
                 try { cliente.deactivate(); } catch (e) { console.warn("Error al desactivar STOMP:", e); }
             }
 
-            setStompClient(null);
-            setConectado(false);
         };
     }, [usuario?.token]); // si el token cambia, reconectamos (útil si se loguea el user)
 
