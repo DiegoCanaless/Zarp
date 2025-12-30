@@ -101,7 +101,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
 
     dispatch(
       setUser({
-        id: resp.id,
+        id: String(resp.id), // ✅ FIX
         uid: resp.uid,
         fullname: resp.nombreCompleto ?? fallback.nombre,
         email: resp.correoElectronico ?? fallback.email,
@@ -114,6 +114,7 @@ export const LoginModal = ({ onClose }: LoginModalProps) => {
         propiedades,
       })
     );
+
 
     redirigirPorRol(resp.rol ?? "CLIENTE");
   };

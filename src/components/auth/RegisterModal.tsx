@@ -89,7 +89,7 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
 
       dispatch(
         setUser({
-          id: clienteResp.id ?? null,
+          id: clienteResp.id != null ? String(clienteResp.id) : "",
           uid: clienteResp.uid ?? uid,
           fullname: clienteResp.nombreCompleto ?? nombre,
           email: clienteResp.correoElectronico ?? email,
@@ -98,9 +98,10 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
           AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
           AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
           rol: clienteResp.rol ?? "CLIENTE",
-          autorizaciones: clienteResp.autorizaciones, // <-- enviamos SOLO autorizaciones
+          autorizaciones: clienteResp.autorizaciones,
         })
       );
+
 
       toast.success("Usuario registrado con éxito", { position: "bottom-center" });
 
@@ -202,7 +203,7 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
 
                 dispatch(
                   setUser({
-                    id: clienteResp.id ?? null,
+                    id: clienteResp.id != null ? String(clienteResp.id) : "",
                     uid: clienteResp.uid ?? uid,
                     fullname: clienteResp.nombreCompleto ?? nombre,
                     email: clienteResp.correoElectronico ?? email,
@@ -211,10 +212,11 @@ export const RegisterModal = ({ onClose }: RegisterModalProps) => {
                     AuthenticatedEmail: clienteResp.correoVerificado ?? emailVerified,
                     AuthenticatedDocs: clienteResp.documentoVerificado ?? false,
                     rol: clienteResp.rol ?? "CLIENTE",
-                    autorizaciones: clienteResp.autorizaciones, // <-- enviamos SOLO autorizaciones
+                    autorizaciones: clienteResp.autorizaciones,
                     propiedades,
                   })
                 );
+
 
                 toast.success("Usuario registrado con éxito", { position: "bottom-center" });
 

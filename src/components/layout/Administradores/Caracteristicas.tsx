@@ -66,7 +66,7 @@ const Caracteristicas = () => {
                     'Authorization': `Bearer ${usuario.token}`
                 }
             });
-            const txt = await resp.clone().text();
+
 
             if (!resp.ok) {
                 setRows(prevRows);
