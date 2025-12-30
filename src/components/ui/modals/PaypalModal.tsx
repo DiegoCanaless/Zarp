@@ -42,9 +42,6 @@ const PayPalModal: React.FC<PayPalModalProps> = ({ isOpen, onClose, usuario }) =
 
         try {
             setSaving(true);
-            const auth = getAuth();
-            const user = auth.currentUser;
-            const token = await user?.getIdToken().catch(() => undefined);
 
             const res = await fetch(
                 `${import.meta.env.VITE_APIBASE}/api/paypal/guardarDireccionPaypal/${usuario.id}`,

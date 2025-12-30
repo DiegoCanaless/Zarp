@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { TipoPersonaResponseDTO } from "../../../types/entities/tipoPersona/TipoPersonaResponseDTO";
+import type { TipoPersonaResponseDTO } from "../../../types/entities/tipoPersona/TipoPersonaResponseDTO";
 
 export type ViajerosSeleccion = Record<number, number>;
 // key = tipoPersona.id, value = cantidad seleccionada
@@ -18,14 +18,12 @@ const Row = ({
     value,
     onDec,
     onInc,
-    onClear,
 }: {
     label: string;
     sublabel?: string;
     value: number;
     onDec: () => void;
     onInc: () => void;
-    onClear: () => void;
 }) => (
     <div className="bg-[#1c3137] text-white rounded-xl p-3 flex items-center justify-between">
         <div>
@@ -100,7 +98,6 @@ export function ViajerosModal({ open, tiposPersona, valores, onClose, onChange }
                                 value={value}
                                 onDec={() => set(t.id, value - 1)}
                                 onInc={() => set(t.id, value + 1)}
-                                onClear={() => set(t.id, 0)}
                             />
                         );
                     })}

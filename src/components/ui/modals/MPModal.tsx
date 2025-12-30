@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import { MdClose } from "react-icons/md";
 import { ButtonSecondary } from "../../ui/buttons/ButtonSecondary";
 import toast from "react-hot-toast";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setUser } from "../../../reducer/user/userSlice";
 import { AutorizacionesCliente } from "../../../types/enums/AutorizacionesCliente";
-import { getAuth } from "firebase/auth";
 
 type MPModalProps = {
     isOpen: boolean;
@@ -44,9 +43,6 @@ const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
 
         try {
             setSaving(true);
-            const auth = getAuth();
-            const user = auth.currentUser;
-            const token = await user?.getIdToken().catch(() => undefined);
 
             // Ajustá endpoint según tu backend
             const res = await fetch(
@@ -157,7 +153,6 @@ const MPModal: React.FC<MPModalProps> = ({ isOpen, onClose, usuario }) => {
                             text={saving ? "Guardando..." : "Guardar CVU"}
                             maxWidth="w-[150px]"
                             onClick={handleSubmit as any}
-                            disabled={saving || !(cvuValido && titularValido)}
                         />
                     </div>
                 </form>

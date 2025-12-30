@@ -111,17 +111,9 @@ const ModalCaracteristica = ({ onClose, onSaved, caracteristica }: ModalCaracter
                                 body: JSON.stringify(payload),
                             });
 
-                            const raw = await resp.clone().text();
                             if (!resp.ok) throw new Error(`Error ${method} ${resp.status}`);
 
-                            // Verificación inmediata: traemos la entidad por id para ver qué quedó guardado
-                            if (isEdit && caracteristica) {
-                                const verify = await fetch(
-                                    `${import.meta.env.VITE_APIBASE}/api/caracteristicas/getById/${caracteristica.id}?_=${Date.now()}`,
-                                    { cache: 'no-store' }
-                                );
-                                const verJson = await verify.json();
-                            }
+
 
                             resetForm();
                             setPreviewUrl(null);
