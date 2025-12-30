@@ -1,4 +1,3 @@
-import React from 'react'
 import { ButtonSecondary } from '../../components/ui/buttons/ButtonSecondary'
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';

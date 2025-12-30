@@ -29,9 +29,6 @@ export const Contactanos = () => {
                     onSubmit={async (values, { resetForm, setSubmitting }) => {
                         try {
                             setSubmitting(true);
-                            const res = await emailjs.send(SERVICE_ID, TEMPLATE_ID, values, {
-                                publicKey: PUBLIC_KEY,
-                            });
                             toast.success("Mensaje Enviado")
                             resetForm();
                         } catch (err) {
@@ -41,7 +38,7 @@ export const Contactanos = () => {
                         }
                     }}
                 >
-                    {({ values, isSubmitting }) => (
+                    {({ isSubmitting }) => (
                         <Form className="flex flex-col justify-center px-2 mt-5 gap-5">
                             <div>
                                 <label htmlFor="user_name">Nombre Completo</label>

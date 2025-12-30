@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { VerificacionClienteResponseDTO } from "../../types/entities/verificacionCliente/VerificacionClienteResponseDTO";
+import type { VerificacionClienteResponseDTO } from "../../types/entities/verificacionCliente/VerificacionClienteResponseDTO";
 import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader";
 import { Footer } from "../../components/layout/Footer";
 import { ButtonPrimary } from "../../components/ui/buttons/ButtonPrimary";

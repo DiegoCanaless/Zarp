@@ -110,8 +110,13 @@ export default function Inicio() {
     });
 
     cliente.activate();
-    return () => cliente.deactivate();
+
+    return () => {
+      // 🔧 cleanup SIN async
+      void cliente.deactivate();
+    };
   }, []);
+
 
   // Mantener viajerosSel alineado a tiposPersona activos si cambian
   useEffect(() => {
