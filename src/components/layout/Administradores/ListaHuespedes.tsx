@@ -27,7 +27,7 @@ const Huespedes = () => {
                 setClientes(clientesData);
                 setPropiedades(propiedadesData);
             })
-            .catch(e => {
+            .catch(() => {
                 setErr("No se pudieron cargar los huéspedes");
             })
             .finally(() => setLoading(false));
@@ -53,8 +53,16 @@ const Huespedes = () => {
                 });
             },
         });
+
         wsClient.activate();
-        return () => wsClient.deactivate();
+
+        // cleanup function
+        return () => {
+            // no devolvemos la promesa, solo la ejecutamos
+            wsClient.deactivate().catch((err) => {
+                console.error("Error al cerrar WebSocket:", err);
+            });
+        };
     }, []);
 
     // IDs de clientes que tienen al menos una propiedad
@@ -79,7 +87,7 @@ const Huespedes = () => {
     // PATCH toggleActivo (no actualiza local, espera ws)
     const handleToggleActivo = async (id: number) => {
         try {
-            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH", headers: {'Authorization': `Bearer ${usuario.token}`} });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH", headers: { 'Authorization': `Bearer ${usuario.token}` } });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             // No llamar setClientes, espera ws
         } catch (err) {

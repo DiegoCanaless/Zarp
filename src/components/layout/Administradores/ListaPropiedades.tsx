@@ -60,7 +60,7 @@ const ListaPropiedades = () => {
                 setClientes(clientesData);
                 setPropiedades(propiedadesData);
             })
-            .catch(e => {
+            .catch(() => {
                 setErr("No se pudieron cargar los datos");
             })
             .finally(() => setLoading(false));
@@ -72,21 +72,19 @@ const ListaPropiedades = () => {
             brokerURL: import.meta.env.VITE_WS_URL,
             reconnectDelay: 5000,
             onConnect: () => {
-                // Propiedades
                 wsClient.subscribe("/topic/propiedades/update", (message) => {
-                    const prop: PropiedadResponseDTO = JSON.parse(message.body);
+                    const updated: PropiedadResponseDTO = JSON.parse(message.body);
                     setPropiedades((prev) => {
-                        const idx = prev.findIndex(p => p.id === prop.id);
+                        const idx = prev.findIndex(p => p.id === updated.id);
                         if (idx >= 0) {
                             const copy = prev.slice();
-                            copy[idx] = prop;
+                            copy[idx] = { ...copy[idx], ...updated };
                             return copy;
                         }
                         return prev;
                     });
                 });
 
-                // Clientes (usuarios)
                 wsClient.subscribe("/topic/clientes/update", (message) => {
                     const updated: ClienteResponseDTO = JSON.parse(message.body);
                     setClientes((prev) => {
@@ -96,15 +94,19 @@ const ListaPropiedades = () => {
                             copy[idx] = { ...copy[idx], ...updated };
                             return copy;
                         }
-                        // Agregar solo si te interesa
                         return prev;
                     });
                 });
             },
         });
+
         wsClient.activate();
-        return () => wsClient.deactivate();
+
+        return () => {
+            wsClient.deactivate();
+        };
     }, []);
+
     // =============== FIN WEBSOCKET ===============
 
     // Agrupa propiedades por usuario y filtra solo las verificadas
@@ -140,7 +142,7 @@ const ListaPropiedades = () => {
     // PATCH toggleActivo para usuario (esperar al ws, no updatear localmente)
     const handleToggleUsuario = async (id: number) => {
         try {
-            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH", headers: {'Authorization': `Bearer ${usuario.token}`}});
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/clientes/toggleActivo/${id}`, { method: "PATCH", headers: { 'Authorization': `Bearer ${usuario.token}` } });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             // NO actualizar estado local, espera el evento del ws
         } catch (err) {
@@ -151,7 +153,7 @@ const ListaPropiedades = () => {
     // PATCH toggleActivo para propiedad (esperar al ws, pero sí actualiza el modal si está abierto)
     const handleTogglePropiedad = async (id: number) => {
         try {
-            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/toggleActivo/${id}`, { method: "PATCH", headers: {'Authorization': `Bearer ${usuario.token}`} });
+            const resp = await fetch(`${import.meta.env.VITE_APIBASE}/api/propiedades/toggleActivo/${id}`, { method: "PATCH", headers: { 'Authorization': `Bearer ${usuario.token}` } });
             if (!resp.ok) throw new Error(`Error PATCH ${resp.status}`);
             // NO actualizar local, esperar ws. Sincronía con modal reiniciará igual.
         } catch (err) {

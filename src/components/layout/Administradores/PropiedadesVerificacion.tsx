@@ -7,8 +7,6 @@ import { useSelector } from "react-redux";
 const PropiedadesVerificacion = () => {
     const [verificaciones, setVerificaciones] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [stompClient, setStompClient] = useState<Client | null>(null);
-    const [conectado, setConectado] = useState<boolean>(false);
     const [cargando, setCargando] = useState<boolean>(true)
 
     const usuario = useSelector((state: any) => state.user);
@@ -44,7 +42,6 @@ const PropiedadesVerificacion = () => {
 
             onConnect: () => {
                 console.log("Conectado al servidor")
-                setConectado(true)
 
                 cliente.subscribe("/topic/propiedades/save", (message) => {
                     console.log("Nueva verificacion creada")
@@ -55,7 +52,6 @@ const PropiedadesVerificacion = () => {
 
             onDisconnect: () => {
                 console.log("Desconectado del servidor")
-                setConectado(false)
             },
 
             onStompError: (frame) => {
@@ -65,7 +61,6 @@ const PropiedadesVerificacion = () => {
         })
 
         cliente.activate()
-        setStompClient(cliente);
 
         return () => {
             if (cliente) {

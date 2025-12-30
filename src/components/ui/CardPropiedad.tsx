@@ -9,7 +9,7 @@ interface CardPropiedadProps {
 }
 
 
-export function CardPropiedad({ propiedad, provincia, onVerMas }: CardPropiedadProps) {
+export function CardPropiedad({ propiedad }: CardPropiedadProps) {
     const navigate = useNavigate();
 
 
@@ -34,7 +34,7 @@ export function CardPropiedad({ propiedad, provincia, onVerMas }: CardPropiedadP
                 </div>
 
 
-                <button className="mt-3 w-full py-2 rounded-xl transition-colors cursor-pointer hover:bg-primary hover:text-white bg-white text-black text-sm hover:opacity-90 transition"  onClick={() => navigate(`/Propiedad/${propiedad.id}`)}> Ver más </button>
+                <button className="mt-3 w-full py-2 rounded-xl transition-colors cursor-pointer hover:bg-primary hover:text-white bg-white text-black text-sm hover:opacity-90 "  onClick={() => navigate(`/Propiedad/${propiedad.id}`)}> Ver más </button>
             </div>
         </article>
     );
