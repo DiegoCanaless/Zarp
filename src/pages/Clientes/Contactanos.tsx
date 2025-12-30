@@ -29,6 +29,10 @@ export const Contactanos = () => {
                     onSubmit={async (values, { resetForm, setSubmitting }) => {
                         try {
                             setSubmitting(true);
+                            await emailjs.send(SERVICE_ID, TEMPLATE_ID, values, {
+                                publicKey: PUBLIC_KEY,
+                            });
+
                             toast.success("Mensaje Enviado")
                             resetForm();
                         } catch (err) {
@@ -42,7 +46,7 @@ export const Contactanos = () => {
                         <Form className="flex flex-col justify-center px-2 mt-5 gap-5">
                             <div>
                                 <label htmlFor="user_name">Nombre Completo</label>
-                                <Field type="text" name="user_name" id="user_name" placeholder="Ingrese tu nombre completo:" className="bg-tertiary px-2 py-2 mt-1 w-full rounded-md outline-none"/>
+                                <Field type="text" name="user_name" id="user_name" placeholder="Ingrese tu nombre completo:" className="bg-tertiary px-2 py-2 mt-1 w-full rounded-md outline-none" />
                                 <ErrorMessage name="user_name" component="div" className="text-red-500 mt-2 text-md" />
                             </div>
 
@@ -65,21 +69,21 @@ export const Contactanos = () => {
                 <h3 className="mt-5 text-md font-medium">Otras maneras</h3>
                 <div className="flex flex-col w-full mt-5 gap-5 pb-10">
                     <div className="flex gap-4 items-end">
-                        <div className="bg-tertiary w-fit p-1 rounded-md"><MdOutlineLocalPhone color="black" size={20}/></div>
+                        <div className="bg-tertiary w-fit p-1 rounded-md"><MdOutlineLocalPhone color="black" size={20} /></div>
                         <p className="text-sm">+5492617688822</p>
                     </div>
                     <div className="flex gap-4 items-end">
-                        <div className="bg-tertiary w-fit p-1 rounded-md"><MdEmail color="black" size={20}/></div>
+                        <div className="bg-tertiary w-fit p-1 rounded-md"><MdEmail color="black" size={20} /></div>
                         <p className="text-sm">zarp@outlook.com</p>
                     </div>
-                    
+
                     <div className="flex gap-4 items-end">
-                        <div className="bg-tertiary w-fit p-1 rounded-md"><MdLocationPin color="black" size={20}/></div>
+                        <div className="bg-tertiary w-fit p-1 rounded-md"><MdLocationPin color="black" size={20} /></div>
                         <p className="text-sm">Calle Principal 454</p>
                     </div>
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </>
     );
 };
