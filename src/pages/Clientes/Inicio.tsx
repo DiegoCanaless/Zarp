@@ -139,12 +139,13 @@ export default function Inicio() {
     return Array.from(
       new Set(
         propiedades
-          .map((p) => p?.direccion?.provincia)
-          .filter((v): v is string => Boolean(v))
+          .map((p) => String(p.direccion.provincia)) // 👈 ACÁ
           .map((v) => formatProvincia(v))
       )
     ).sort();
   }, [propiedades]);
+
+
 
   const propsPorProvincia = useMemo(() => {
     const grupos: Record<string, PropiedadResponseDTO[]> = {};
@@ -162,7 +163,7 @@ export default function Inicio() {
     return (prop: PropiedadResponseDTO) => {
       const nombre = normalizeText(prop?.nombre);
       const descripcion = normalizeText((prop as any)?.descripcion);
-      const ciudad = normalizeText(prop?.direccion?.localidad ?? prop?.direccion?.ciudad);
+      const ciudad = normalizeText(prop.direccion.localidad);
       const calle = normalizeText(prop?.direccion?.calle);
       const provinciaRaw = normalizeText(prop?.direccion?.provincia);
       const provinciaFmt = normalizeText(formatProvincia(prop?.direccion?.provincia ?? ""));
@@ -303,7 +304,7 @@ export default function Inicio() {
                       key={prop.id ?? `${prov}-${prop.nombre}`}
                       propiedad={prop}
                       provincia={prov}
-                      onVerMas={(id) => { }}
+                      onVerMas={() => { }}
                     />
                   ))}
                 </div>

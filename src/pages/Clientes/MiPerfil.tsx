@@ -407,7 +407,7 @@ const MiPerfil: React.FC = () => {
               fontSize="text-md"
               color="text-white"
               maxWidth="w-[170px]"
-              disabled={saving}
+
             />
             <ButtonSecondary
               onClick={() => {
