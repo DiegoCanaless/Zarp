@@ -11,10 +11,7 @@ const Chat = () => {
   const { id } = useParams<{ id: string }>();
   const [conversacion, setConversacion] = useState<ConversacionResponseDTO | null>(null);
   const [cargando, setCargando] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
   const [mensaje, setMensaje] = useState<string>("");
-  const [stompClient, setStompClient] = useState<Client | null>(null);
-  const [conectado, setConectado] = useState<boolean>(false);
 
   const usuario = useSelector((state: any) => state.user)
 
@@ -108,7 +105,6 @@ const Chat = () => {
 
     cliente.onConnect = () => {
       console.log("STOMP CONECTADO")
-      setConectado(true);
 
       cliente.subscribe(`/topic/conversaciones/update/${usuario.id}`, (message) => {
         try {
@@ -137,7 +133,6 @@ const Chat = () => {
     }
 
     cliente.onDisconnect = () => {
-      setConectado(false)
       console.log("STOMP desconectado");
     }
 
@@ -162,7 +157,7 @@ const Chat = () => {
       <main className="bg-secondary min-h-screen pt-15 text-white">
         {cargando ? (
           <div>Cargando conversación...</div>
-        ) : error || !conversacion ? (
+        ) :  !conversacion ? (
           <div>No se pudo cargar la conversación.</div>
         ) : (
           <div className="flex flex-col items-center gap-5 lg:px-30">

@@ -1,8 +1,8 @@
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { UsuarioHeader } from '../../components/layout/headers/UsuarioHeader'
 import { Footer } from '../../components/layout/Footer'
-import { PropiedadResponseDTO } from '../../types/entities/propiedad/PropiedadResponseDTO'
+import type { PropiedadResponseDTO } from '../../types/entities/propiedad/PropiedadResponseDTO'
 import { useSelector } from 'react-redux'
 import { ButtonSecondary } from '../../components/ui/buttons/ButtonSecondary'
 import { MdAdd } from 'react-icons/md'

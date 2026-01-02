@@ -120,13 +120,6 @@ const EditarPropiedad = () => {
         [caracteristicas]
     );
 
-    const setPrincipalByIndex = (values: any, setFieldValue: any, index: number) => {
-        const next = (values.detalleImagenes ?? []).map((img: ImagenDetalle, i: number) => ({
-            ...img,
-            imgPrincipal: i === index,
-        }));
-        setFieldValue("detalleImagenes", next);
-    };
 
     const uploadAtIndex = async (values: any, setFieldValue: any, file: File, idx: number) => {
         if (!file) return;
@@ -345,8 +338,8 @@ const EditarPropiedad = () => {
                             </div>
 
                             <div className="flex gap-3 justify-end pb-10">
-                                <ButtonSecondary text="Cancelar" color="text-white" className="cursor-pointer" borderRadius="rounded-sm" fontSize="text-md" bgColor="bg-gray-600" maxWidth="w-[120px]" onClick={() => navigate("/MisPropiedades")} type="button" />
-                                <ButtonSecondary text={guardando ? "Guardando..." : "Guardar cambios"} color="text-white" className="cursor-pointer" borderRadius="rounded-sm" fontSize="text-md" bgColor="bg-green-600" maxWidth="w-[160px]" onClick={() => handleSubmit()} type="button" />
+                                <ButtonSecondary text="Cancelar" color="text-white" className="cursor-pointer" borderRadius="rounded-sm" fontSize="text-md" bgColor="bg-gray-600" maxWidth="w-[120px]" onClick={() => navigate("/MisPropiedades")}/>
+                                <ButtonSecondary text={guardando ? "Guardando..." : "Guardar cambios"} color="text-white" className="cursor-pointer" borderRadius="rounded-sm" fontSize="text-md" bgColor="bg-green-600" maxWidth="w-[160px]" onClick={() => handleSubmit()}/>
                             </div>
                         </Form>
                     )}

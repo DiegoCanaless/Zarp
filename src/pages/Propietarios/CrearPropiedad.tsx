@@ -29,8 +29,6 @@ const CrearPropiedad = () => {
     const [tipoPersonas, setTipoPersonas] = useState<any[]>([]);
     const [ambientes, setAmbientes] = useState<any[]>([]);
     const [caracteristicas, setCaracteristicas] = useState<any[]>([]);
-    const [error, setError] = useState<string>();
-    const [loading, setLoading] = useState<boolean>(false);
     const [creating, setCreating] = useState<boolean>(false);
 
     const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
@@ -44,7 +42,6 @@ const CrearPropiedad = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                setLoading(true);
                 const [propiedadesRes, personasRes, ambientesRes, caracteristicasRes] = await Promise.all([
                     fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPropiedades`),
                     fetch(`${import.meta.env.VITE_APIBASE}/api/tipoPersona`),
@@ -62,9 +59,7 @@ const CrearPropiedad = () => {
                 setAmbientes(Ambientesres || []);
                 setCaracteristicas(caracteristicasres || []);
             } catch (e) {
-                setError("Error al cargar los datos");
             } finally {
-                setLoading(false);
             }
         };
 
@@ -156,7 +151,6 @@ const CrearPropiedad = () => {
                 throw new Error(`Error ${res.status}. ${txt || "No se pudo crear la propiedad"}`);
             }
 
-            const data = await res.json().catch(() => ({}));
             toast.success("Propiedad creada exitosamente", { duration: 2500 });
             setTimeout(() => navigate('/Inicio'), 3000);
         } catch (e: any) {

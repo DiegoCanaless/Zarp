@@ -7,7 +7,8 @@ import { useSelector } from "react-redux";
 import fotoDefault from "../../assets/Imagenes/fotoPerfilDefault.jpg";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import type {IMessage, StompSubscription } from '@stomp/stompjs';
+import  { Client } from '@stomp/stompjs';
 
 const getInterlocutor = (conv: ConversacionResponseDTO, userId: number) =>
     conv.cliente1?.id === userId ? conv.cliente2 : conv.cliente1;
@@ -19,8 +20,7 @@ const BandejaChats = () => {
     const [conversaciones, setConversaciones] = useState<ConversacionResponseDTO[]>([]);
     const [cargando, setCargando] = useState<boolean>(true);
     const [error, setError] = useState<boolean>(false);
-    const [stompClient, setStompClient] = useState<Client | null>(null);
-    const [conectado, setConectado] = useState<boolean>(false);
+
 
     const user = useSelector((state: any) => state.user);
     const navigate = useNavigate();
@@ -89,7 +89,6 @@ const BandejaChats = () => {
         cliente.onConnect = () => {
             console.log("STOMP CONECTADO");
             conectadoLocal = true;
-            setConectado(true);
 
             try {
                 subsSave = cliente.subscribe(`/topic/conversaciones/save/${user.id}`, (message: IMessage) => {
@@ -150,13 +149,11 @@ const BandejaChats = () => {
 
         cliente.onDisconnect = () => {
             console.log("STOMP desconectado");
-            setConectado(false);
             conectadoLocal = false;
         };
 
         // Activar conexión
         cliente.activate();
-        setStompClient(cliente);
 
         // Cleanup
         return () => {
@@ -172,8 +169,6 @@ const BandejaChats = () => {
             } catch (e) {
                 console.warn("Error al desactivar STOMP:", e);
             }
-            setStompClient(null);
-            setConectado(false);
         };
     }, [user?.id]);
 
