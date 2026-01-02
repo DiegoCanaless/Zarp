@@ -4,8 +4,6 @@ import { UsuarioHeader } from "../../components/layout/headers/UsuarioHeader";
 import { useEffect, useMemo, useState } from "react";
 import type { PropiedadResponseDTO } from "../../types/entities/propiedad/PropiedadResponseDTO";
 import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/pagination";
 import { Pagination } from "swiper/modules";
 import { FaStar } from "react-icons/fa";
 import { ButtonSecondary } from "../../components/ui/buttons/ButtonSecondary";
@@ -18,6 +16,8 @@ import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import "swiper/css";
+import "swiper/css/pagination";
 
 L.Icon.Default.mergeOptions({
     iconRetinaUrl,
@@ -66,7 +66,11 @@ const Propiedad = () => {
 
     const calcularMedia = () => {
         if (!propiedad?.resenias?.length) return 0;
-        const suma = propiedad.resenias.reduce((acc, r) => acc + (r.calificacion ?? r.puntuacion ?? 0), 0);
+        const suma = propiedad.resenias.reduce(
+            (acc, r) => acc + r.calificacion,
+            0
+        );
+
         const media = suma / propiedad.resenias.length;
         return Math.round(media * 100) / 100;
     };
@@ -88,7 +92,7 @@ const Propiedad = () => {
 
 
     const reservar = () => {
-        if(usuario.rol === "PROPIETARIO"){
+        if (usuario.rol === "PROPIETARIO") {
             navigate(`/ReservarPropiedad/${propiedad?.id}`)
         } else {
             toast.error("Tienes que tener las verificaciones aprobadas para poder reservar")
@@ -98,7 +102,7 @@ const Propiedad = () => {
     return (
         <>
             <UsuarioHeader />
-            <main className="min-h-screen bg-secondary pt-15 pb-15 text-white">
+            <main className="min-h-screen bg-secondary pt-15 pb-15 w-full text-white">
                 {loading && <p>Cargando propiedad…</p>}
                 {error && !loading && <p>{error}</p>}
 
@@ -117,7 +121,7 @@ const Propiedad = () => {
                             <h1 className="text-center mt-2 mb-2 text-lg">{propiedad.nombre}</h1>
                             <hr className="bg-white mb-2" />
 
-                            <div className="flex justify-center gap-2 w-full px-2">
+                            <div className="flex flex-wrap justify-center gap-2 w-full px-4">
                                 {propiedad.detalleAmbientes.map((ambiente, i) => (
                                     <span key={ambiente.id ?? i} className="text-xs">
                                         {ambiente.cantidad} {ambiente.ambiente.denominacion}
@@ -175,7 +179,7 @@ const Propiedad = () => {
                             <div className="flex flex-col  px-6 mb-4">
                                 <h4>Características</h4>
                                 <div className="flex gap-2 flex-wrap mb-4 text-xs">
-                                    {propiedad.detalleTipoPersonas.map((tipoPersona, i) => (
+                                    {propiedad.detalleTipoPersonas.map((tipoPersona) => (
                                         <p>{tipoPersona.tipoPersona.denominacion}: {tipoPersona.cantidad}</p>
                                     ))}
                                 </div>
@@ -229,8 +233,9 @@ const Propiedad = () => {
                                         propiedad.resenias.map((resenia, i) => {
                                             const estrellas = Math.max(
                                                 0,
-                                                Math.min(5, Number(resenia.calificacion ?? resenia.puntuacion ?? 0))
+                                                Math.min(5, resenia.calificacion)
                                             );
+
 
                                             return (
                                                 <SwiperSlide key={resenia.id ?? i}>
@@ -297,12 +302,12 @@ const Propiedad = () => {
 
                             <h3 className="text-lg">Caracteristica</h3>
                             <div className="flex gap-2 mb-2">
-                                {propiedad.detalleTipoPersonas.map((tipoPersona, i) => (
+                                {propiedad.detalleTipoPersonas.map((tipoPersona) => (
                                     <p className="text-xs">{tipoPersona.tipoPersona.denominacion}: {tipoPersona.cantidad}</p>
                                 ))}
                             </div>
                             <div className="flex gap-2 mb-4">
-                                {propiedad.detalleCaracteristicas.map((caracteristica, i) => (
+                                {propiedad.detalleCaracteristicas.map((caracteristica) => (
                                     <div className="flex items-center">
                                         <img className="h-5 w-5 mr-2" src={caracteristica.caracteristica.imagen.urlImagen} alt={caracteristica.caracteristica.denominacion} />
                                         <p className="text-xs">{caracteristica.caracteristica.denominacion}</p>
@@ -320,7 +325,7 @@ const Propiedad = () => {
                                             <FaStar size={15} key={i} className={i < estrellasLlenas ? "text-yellow-400" : "text-gray-500"} />
                                         ))}
                                     </div>
-                                    {propiedad.resenias.map((resenia, i) => (
+                                    {propiedad.resenias.map((resenia) => (
                                         <div className="mb-6" key={resenia.id}>
                                             <div className="flex gap-2">
                                                 <img src={resenia.usuario.fotoPerfil?.urlImagen} alt="" className="w-10 h-10 object-cover rounded-2xl" />
