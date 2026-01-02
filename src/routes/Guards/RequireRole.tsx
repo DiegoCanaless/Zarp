@@ -1,5 +1,6 @@
 // src/routes/guards/RequireRole.tsx
-import { ReactNode, useMemo } from "react";
+import type { ReactNode } from "react";
+import { useMemo } from "react"
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { selectUserRol, selectIsAuthenticated } from "../../reducer/user/userSlice";

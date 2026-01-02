@@ -1,6 +1,8 @@
 // src/reducer/user/userSlice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { AutorizacionesCliente } from '../../types/enums/AutorizacionesCliente';
+
+import type { PayloadAction } from '@reduxjs/toolkit';
 
 type Propiedad = any;
 

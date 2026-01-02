@@ -1,5 +1,5 @@
 // src/routes/guards/RequireAuth.tsx
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, useLocation } from "react-router-dom";
 import { selectIsAuthenticated } from "../../reducer/user/userSlice";

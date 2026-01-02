@@ -107,15 +107,27 @@ export const Schema4 = Yup.object().shape({
             })
         )
         .length(4, 'Deben ser exactamente 4 imágenes (slots)')
-        .test('one-principal', 'Debes elegir exactamente una imagen principal', (arr: any[]) => {
-            if (!arr) return false;
-            const count = arr.filter((x) => !!x?.imgPrincipal).length;
-            return count === 1;
-        })
-        .test('at-least-one-url', 'Debes subir al menos una imagen', (arr: any[]) => {
-            if (!arr) return false;
-            return arr.some((x) => !!x?.imagen?.urlImagen && x.imagen.urlImagen.trim() !== "");
-        }),
+        .test(
+            'one-principal',
+            'Debes elegir exactamente una imagen principal',
+            (arr) => {
+                if (!arr) return false;
+                const count = arr.filter(x => x?.imgPrincipal).length;
+                return count === 1;
+            }
+        )
+
+        .test(
+            'at-least-one-url',
+            'Debes subir al menos una imagen',
+            (arr) => {
+                if (!arr) return false;
+                return arr.some(
+                    x => !!x?.imagen?.urlImagen && x.imagen.urlImagen.trim() !== ""
+                );
+            }
+        )
+
 });
 
 export const schemas = [Schema1, Schema2, Schema3, Schema4];

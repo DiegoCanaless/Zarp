@@ -83,9 +83,6 @@ const ReservarPropiedad = () => {
     const [excludeIntervals, setExcludeIntervals] = useState<Intervalo[]>([]);
     const [fechaDesde, setFechaDesde] = useState<Date | null>(null);
     const [fechaHasta, setFechaHasta] = useState<Date | null>(null);
-    const [stompClient, setStompClient] = useState<Client | null>(null);
-    const [conectado, setConectado] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
 
     const [mensajeFecha, setMensajeFecha] = useState<string | null>(null);
     const setAviso = useCallback((msg: string) => {
@@ -148,7 +145,6 @@ const ReservarPropiedad = () => {
 
             onConnect: () => {
                 console.log("Conectado al servidor")
-                setConectado(true)
 
                 cliente.subscribe("/topic/reservas/save", (message) => {
                     try {
@@ -174,24 +170,19 @@ const ReservarPropiedad = () => {
 
             onDisconnect: () => {
                 console.log("Desconectado del servidor")
-                setConectado(false)
             },
 
             onStompError: (frame) => {
                 console.error("Error Stromp:", frame)
-                setError("Error de conexion WebSocket")
             }
         })
 
         cliente.activate()
-        setStompClient(cliente);
-
         return () => {
             if (cliente) {
                 try {
                     cliente.deactivate();
                 } catch { }
-                setStompClient(null);
 
             }
         }

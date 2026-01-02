@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 
 const Reservas = () => {
     const [cargando, setCargando] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
     const [reservas, setReservas] = useState<ReservaResponseDTO[]>([]);
     const [modalPuntuacion, setModalPuntuacion] = useState<boolean>(false);
     const [reservaSeleccionada, setReservaSeleccionada] = useState<ReservaResponseDTO>()
@@ -148,7 +147,6 @@ const Reservas = () => {
                 const msg = e?.message?.includes("Failed to fetch")
                     ? "No se pudo conectar con el servidor (¿CORS o back caído?)."
                     : e?.message || "No se pudo enviar la reseña";
-                setError(msg)
                 toast.error(msg); // <-- así funciona bien
             } finally {
                 setCargando(false);

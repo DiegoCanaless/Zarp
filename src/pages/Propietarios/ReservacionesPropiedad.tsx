@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 
 const ReservacionesPropiedad = () => {
     const [cargando, setCargando] = useState<boolean>(true);
-    const [error, setError] = useState<string>("");
     const [reservas, setReservas] = useState<ReservaResponseDTO[]>([])
 
     const navigate = useNavigate()
@@ -40,7 +39,6 @@ const ReservacionesPropiedad = () => {
                 const msg = e?.message?.includes("Failed to fetch")
                     ? "No se pudo conectar con el servidor (¿CORS o back caído?)."
                     : e?.message || "No se pudo enviar la reseña";
-                setError(msg)
                 toast.error(msg);
             } finally {
                 setCargando(false);
